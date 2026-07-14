@@ -117,8 +117,13 @@ function escapeHtml(str) {
 
 // Content supports [label](path) links, e.g. [projects](projects) — path is
 // always relative to the filesystem root, not the current file's folder.
+// A path with a URL scheme, e.g. [github](https://github.com/eudypte), is
+// treated as external and opens in a new tab instead of being routed in-app.
 function linkifyContent(raw) {
   return escapeHtml(raw).replace(/\[([^\]]+)\]\(([^)]+)\)/g, (match, label, path) => {
+    if (/^[a-z][a-z0-9+.-]*:/i.test(path)) {
+      return `<a href="${path}" class="viewer-link" target="_blank" rel="noopener noreferrer">${label}</a>`;
+    }
     return `<a href="#/${path}" class="viewer-link">${label}</a>`;
   });
 }

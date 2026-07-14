@@ -49,7 +49,7 @@ Link: sdlfkjhds`,
       content: `CONTACT
 ---------------------------------------
 Email:   pselim4@outlook.com
-GitHub:  github.com/eudypte
+GitHub:  [github.com/eudypte](https://github.com/eudypte)
 LinkedIn: linkedin.com/in/selimd`,
     },
   ],

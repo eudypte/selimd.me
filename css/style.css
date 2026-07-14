@@ -190,6 +190,13 @@ body {
 .file-list li.selected .size {
   color: var(--nc-blue);
 }
+body.viewer-mode .file-list li.selected {
+  background: rgba(0, 170, 170, 0.35);
+  color: var(--nc-lightcyan);
+}
+body.viewer-mode .file-list li.selected .size {
+  color: var(--nc-lightcyan);
+}
 
 .viewer-content {
   margin: 0;
@@ -200,6 +207,19 @@ body {
   font-family: inherit;
   font-size: 0.85rem;
   white-space: pre-wrap;
+}
+.viewer-link {
+  color: inherit;
+  text-decoration: underline;
+}
+.viewer-link:focus {
+  outline: none;
+  background: var(--nc-cyan);
+  color: var(--nc-blue);
+}
+
+.file-list li:hover:not(.selected) {
+  background: rgba(255, 255, 255, 0.15);
 }
 
 .status-bar {

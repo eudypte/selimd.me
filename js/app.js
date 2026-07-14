@@ -10,7 +10,16 @@ const state = {
   selected: null,
   listing: [],
   cursor: 0,
+  mode: "list", // "list" | "viewer"
+  linkIndex: 0,
 };
+
+let pendingViewerFocus = false;
+
+function setMode(mode) {
+  state.mode = mode;
+  document.body.classList.toggle("viewer-mode", mode === "viewer");
+}
 
 function resolveFromHash() {
   const raw = location.hash.replace(/^#\/?/, "");
@@ -74,24 +83,77 @@ function renderList() {
       state.cursor = i;
       openAt(i);
     });
+    li.addEventListener("mouseenter", () => previewNode(node));
+    li.addEventListener("mouseleave", () => {
+      renderViewer();
+      if (state.mode === "viewer") focusLink(state.linkIndex);
+    });
     fileListEl.appendChild(li);
   });
 }
 
+function escapeHtml(str) {
+  return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
+
+// Content supports [label](path) links, e.g. [projects](projects) — path is
+// always relative to the filesystem root, not the current file's folder.
+function linkifyContent(raw) {
+  return escapeHtml(raw).replace(/\[([^\]]+)\]\(([^)]+)\)/g, (match, label, path) => {
+    return `<a href="#/${path}" class="viewer-link">${label}</a>`;
+  });
+}
+
+function viewerLinks() {
+  return Array.from(viewerEl.querySelectorAll("a.viewer-link"));
+}
+
+function focusLink(index) {
+  const links = viewerLinks();
+  if (links.length === 0) {
+    setMode("list");
+    return;
+  }
+  state.linkIndex = Math.max(0, Math.min(index, links.length - 1));
+  links[state.linkIndex].focus();
+}
+
+function leaveViewerMode() {
+  viewerLinks()[state.linkIndex]?.blur();
+  setMode("list");
+}
+
+function renderFileView(node) {
+  rightTitleEl.textContent = node.name.toUpperCase();
+  viewerEl.innerHTML = linkifyContent(node.content);
+}
+
+function renderDirInfo(dirNode) {
+  rightTitleEl.textContent = "Info";
+  const fileCount = dirNode.children.filter((c) => c.type === "file").length;
+  const dirCount = dirNode.children.filter((c) => c.type === "dir").length;
+  viewerEl.textContent =
+    `SELIM D. — PORTFOLIO\n` +
+    `${"-".repeat(40)}\n\n` +
+    `Use arrow keys + Enter, or click, to\n` +
+    `browse. Start with ABOUT.TXT.\n\n` +
+    `${fileCount} file(s), ${dirCount} folder(s) here.`;
+}
+
 function renderViewer() {
   if (state.selected) {
-    rightTitleEl.textContent = state.selected.name.toUpperCase();
-    viewerEl.textContent = state.selected.content;
+    renderFileView(state.selected);
   } else {
-    rightTitleEl.textContent = "Info";
-    const fileCount = state.dirNode.children.filter((c) => c.type === "file").length;
-    const dirCount = state.dirNode.children.filter((c) => c.type === "dir").length;
-    viewerEl.textContent =
-      `SELIM D. — PORTFOLIO\n` +
-      `${"-".repeat(40)}\n\n` +
-      `Use arrow keys + Enter, or click, to\n` +
-      `browse. Start with ABOUT.TXT.\n\n` +
-      `${fileCount} file(s), ${dirCount} folder(s) here.`;
+    renderDirInfo(state.dirNode);
+  }
+}
+
+// Preview whatever the list cursor is currently on, without navigating.
+function previewNode(node) {
+  if (node && node.type === "file") {
+    renderFileView(node);
+  } else {
+    renderViewer();
   }
 }
 
@@ -104,12 +166,20 @@ function render() {
 }
 
 function navigate(segments) {
-  location.hash = "/" + segments.map(encodeURIComponent).join("/");
+  const target = "/" + segments.map(encodeURIComponent).join("/");
+  // Setting location.hash to its current value doesn't fire "hashchange" —
+  // re-run the render/focus logic directly so re-opening the same file works.
+  if (location.hash === "#" + target) {
+    applyHash();
+  } else {
+    location.hash = target;
+  }
 }
 
-function openAt(index) {
+function openAt(index, { focusViewer = false } = {}) {
   const node = state.listing[index];
   if (!node) return;
+  if (focusViewer) pendingViewerFocus = true;
   if (node.type === "up") {
     navigate(state.dirPath.slice(0, -1));
   } else {
@@ -118,39 +188,84 @@ function openAt(index) {
 }
 
 function onKeyDown(e) {
+  if (state.mode === "viewer") {
+    switch (e.key) {
+      case "ArrowDown":
+      case "j":
+        focusLink(state.linkIndex + 1);
+        e.preventDefault();
+        break;
+      case "ArrowUp":
+      case "k":
+        focusLink(state.linkIndex - 1);
+        e.preventDefault();
+        break;
+      case "Enter":
+      case "l":
+        viewerLinks()[state.linkIndex]?.click();
+        e.preventDefault();
+        break;
+      case "Backspace":
+      case "h":
+      case "Escape":
+        leaveViewerMode();
+        e.preventDefault();
+        break;
+    }
+    return;
+  }
+
   switch (e.key) {
     case "ArrowDown":
     case "j":
       state.cursor = Math.min(state.cursor + 1, state.listing.length - 1);
       renderList();
+      previewNode(state.listing[state.cursor]);
       e.preventDefault();
       break;
     case "ArrowUp":
     case "k":
       state.cursor = Math.max(state.cursor - 1, 0);
       renderList();
+      previewNode(state.listing[state.cursor]);
       e.preventDefault();
       break;
     case "Enter":
     case "l":
-      openAt(state.cursor);
+      openAt(state.cursor, { focusViewer: true });
       e.preventDefault();
       break;
     case "Backspace":
     case "h":
-      if (state.dirPath.length > 0) navigate(state.dirPath.slice(0, -1));
+      if (state.selected) {
+        navigate(state.dirPath);
+      } else if (state.dirPath.length > 0) {
+        navigate(state.dirPath.slice(0, -1));
+      }
       e.preventDefault();
       break;
   }
 }
 
-window.addEventListener("hashchange", () => {
+function afterRender() {
+  if (!pendingViewerFocus) return;
+  pendingViewerFocus = false;
+  if (state.selected && viewerLinks().length > 0) {
+    setMode("viewer");
+    focusLink(0);
+  }
+}
+
+function applyHash() {
   resolveFromHash();
+  setMode("list");
   render();
-});
+  afterRender();
+}
+
+window.addEventListener("hashchange", applyHash);
 
 window.addEventListener("DOMContentLoaded", () => {
-  resolveFromHash();
-  render();
+  applyHash();
   document.addEventListener("keydown", onKeyDown);
 });

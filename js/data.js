@@ -12,7 +12,10 @@ Software engineer.
 This site is a small portfolio built to
 look like an old two-pane file manager (specifically norton commander).
 Browse the tree on the left, read the
-file on the right.`,
+file on the right.
+
+See [projects](projects) or get in
+[touch](contact.txt).`,
     },
     {
       name: "projects",

@@ -1,3 +1,6 @@
+const navigatorEl = document.getElementById("navigator");
+const parentListEl = document.getElementById("parent-list");
+const parentTitleEl = document.getElementById("parent-title");
 const fileListEl = document.getElementById("file-list");
 const leftTitleEl = document.getElementById("left-title");
 const rightTitleEl = document.getElementById("right-title");
@@ -7,6 +10,7 @@ const statusBarEl = document.getElementById("status-bar");
 const state = {
   dirNode: FS,
   dirPath: [],
+  parentNode: null,
   selected: null,
   listing: [],
   cursor: 0,
@@ -15,10 +19,27 @@ const state = {
 };
 
 let pendingViewerFocus = false;
+let pendingCursorName = null;
 
 function setMode(mode) {
   state.mode = mode;
   document.body.classList.toggle("viewer-mode", mode === "viewer");
+}
+
+function sortChildren(children) {
+  return [...(children || [])].sort((a, b) => {
+    if (a.type !== b.type) return a.type === "dir" ? -1 : 1;
+    return a.name.localeCompare(b.name);
+  });
+}
+
+function getNodeAtPath(segments) {
+  let node = FS;
+  for (const seg of segments) {
+    node = (node.children || []).find((c) => c.name === seg && c.type === "dir");
+    if (!node) return FS;
+  }
+  return node;
 }
 
 function resolveFromHash() {
@@ -41,10 +62,7 @@ function resolveFromHash() {
     }
   }
 
-  const children = [...(node.children || [])].sort((a, b) => {
-    if (a.type !== b.type) return a.type === "dir" ? -1 : 1;
-    return a.name.localeCompare(b.name);
-  });
+  const children = sortChildren(node.children);
 
   const listing = [];
   if (dirPath.length > 0) listing.push({ type: "up", name: ".." });
@@ -52,6 +70,7 @@ function resolveFromHash() {
 
   state.dirNode = node;
   state.dirPath = dirPath;
+  state.parentNode = dirPath.length > 0 ? getNodeAtPath(dirPath.slice(0, -1)) : null;
   state.selected = selected;
   state.listing = listing;
   state.cursor = selected
@@ -157,10 +176,27 @@ function previewNode(node) {
   }
 }
 
+function renderParentPane() {
+  navigatorEl.classList.toggle("has-parent", state.parentNode !== null);
+  if (!state.parentNode) return;
+
+  const activeName = state.dirPath[state.dirPath.length - 1];
+  parentTitleEl.textContent = dosPath(state.dirPath.slice(0, -1));
+  parentListEl.innerHTML = "";
+  sortChildren(state.parentNode.children).forEach((node) => {
+    const li = document.createElement("li");
+    li.className = node.type === "file" ? "file" : "dir";
+    if (node.name === activeName) li.classList.add("selected");
+    li.innerHTML = `<span class="name">${node.name}</span><span class="size">${sizeLabel(node)}</span>`;
+    parentListEl.appendChild(li);
+  });
+}
+
 function render() {
   leftTitleEl.textContent = dosPath(state.dirPath);
   statusBarEl.textContent =
     dosPath(state.dirPath) + (state.selected ? "\\" + state.selected.name.toUpperCase() : "");
+  renderParentPane();
   renderList();
   renderViewer();
 }
@@ -181,6 +217,7 @@ function openAt(index, { focusViewer = false } = {}) {
   if (!node) return;
   if (focusViewer) pendingViewerFocus = true;
   if (node.type === "up") {
+    pendingCursorName = state.dirPath[state.dirPath.length - 1];
     navigate(state.dirPath.slice(0, -1));
   } else {
     navigate([...state.dirPath, node.name]);
@@ -200,6 +237,7 @@ function onKeyDown(e) {
         focusLink(state.linkIndex - 1);
         e.preventDefault();
         break;
+      case "ArrowRight":
       case "Enter":
       case "l":
         viewerLinks()[state.linkIndex]?.click();
@@ -208,6 +246,7 @@ function onKeyDown(e) {
       case "Backspace":
       case "h":
       case "Escape":
+      case "ArrowLeft":
         leaveViewerMode();
         e.preventDefault();
         break;
@@ -238,8 +277,10 @@ function onKeyDown(e) {
     case "Backspace":
     case "h":
       if (state.selected) {
+        pendingCursorName = state.selected.name;
         navigate(state.dirPath);
       } else if (state.dirPath.length > 0) {
+        pendingCursorName = state.dirPath[state.dirPath.length - 1];
         navigate(state.dirPath.slice(0, -1));
       }
       e.preventDefault();
@@ -258,6 +299,11 @@ function afterRender() {
 
 function applyHash() {
   resolveFromHash();
+  if (!state.selected && pendingCursorName) {
+    const idx = state.listing.findIndex((n) => n.name === pendingCursorName);
+    if (idx >= 0) state.cursor = idx;
+  }
+  pendingCursorName = null;
   setMode("list");
   render();
   afterRender();

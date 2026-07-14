@@ -146,8 +146,26 @@ body {
   min-width: 0;
   background: var(--nc-blue);
 }
-.pane + .pane {
+.pane + .pane,
+.navigator + .pane {
   border-left: 3px double var(--nc-cyan);
+}
+
+.navigator {
+  flex: 1;
+  display: flex;
+  min-width: 0;
+}
+
+.pane-parent {
+  display: none;
+}
+.navigator.has-parent .pane-parent {
+  display: flex;
+  flex: 0.8;
+}
+.navigator.has-parent #pane-left {
+  flex: 1.2;
 }
 
 .pane-title {

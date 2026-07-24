@@ -274,6 +274,7 @@ function onKeyDown(e) {
       previewNode(state.listing[state.cursor]);
       e.preventDefault();
       break;
+    case "ArrowRight":
     case "Enter":
     case "l":
       openAt(state.cursor, { focusViewer: true });
@@ -281,6 +282,7 @@ function onKeyDown(e) {
       break;
     case "Backspace":
     case "h":
+    case "ArrowLeft":
       if (state.selected) {
         pendingCursorName = state.selected.name;
         navigate(state.dirPath);

@@ -22,14 +22,31 @@ See [projects](projects) or get in
       type: "dir",
       children: [
         {
-          name: "project-one.txt",
+          name: "basic-orbit-sim.txt",
           type: "file",
-          content: `PROJECT ONE
+          content: `BASIC ORBIT SIM
 ---------------------------------------
-description.
+A 2D solar system simulator. Simulates
+gravitational attraction between bodies
+using Newton's law of universal
+gravitation, with an interactive UI for
+controlling the simulation.
 
-Stack: FILL
-Link: raaa`,
+Sun, Earth, Mars, Mercury and Venus are
+simulated with realistic masses and
+orbital velocities. Click anywhere in
+space to drop a custom body with a
+configurable mass and initial velocity
+and watch it get pulled into the
+system. Zoom with the scroll wheel,
+pause/resume, run at 2x speed, and
+toggle individual planets on or off
+from the settings panel.
+
+Stack: Python, Pygame, pygame_gui,
+pygame-widgets
+
+[View on GitHub](https://github.com/eudypte/basic-orbit-sim)`,
         },
         {
           name: "project-two.txt",
@@ -48,9 +65,9 @@ Link: sdlfkjhds`,
       type: "file",
       content: `CONTACT
 ---------------------------------------
-Email:   pselim4@outlook.com
+Email:   [pselim4@outlook.com](mailto:pselim4@outlook.com)
 GitHub:  [github.com/eudypte](https://github.com/eudypte)
-LinkedIn: linkedin.com/in/selimd`,
+LinkedIn: [linkedin.com/in/selimd](https://linkedin.com/in/selimd)`,
     },
   ],
 };

@@ -230,7 +230,8 @@ body.viewer-mode .file-list li.selected .size {
   color: inherit;
   text-decoration: underline;
 }
-.viewer-link:focus {
+.viewer-link:focus,
+.viewer-link:hover {
   outline: none;
   background: var(--nc-cyan);
   color: var(--nc-blue);

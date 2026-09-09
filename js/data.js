@@ -68,9 +68,9 @@ Each track is smoothed with a
 [Kalman filter](https://en.wikipedia.org/wiki/Kalman_filter). Confidence reflects how
 many sources see it, report freshness,
 and agreement after time-aligning
-positions.
-Operators can draw restricted zones and
-receive alerts when aircraft enter them.
+positions. Operators can draw restricted
+zones and receive alerts when aircraft
+enter them.
 
 Viewing is public. Analysts sign in to
 draw or edit zones, with every change

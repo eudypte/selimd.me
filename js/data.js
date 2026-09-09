@@ -49,14 +49,33 @@ pygame-widgets
 [View on GitHub](https://github.com/eudypte/basic-orbit-sim)`,
         },
         {
-          name: "project-two.txt",
+          name: "aerofusion.txt",
           type: "file",
-          content: `PROJECT TWO
+          content: `AEROFUSION
 ---------------------------------------
-description.
+A multi-source air-track fusion and
+situational-awareness console. It
+ingests live ADS-B feeds from OpenSky
+Network and adsb.lol, then correlates
+reports of the same aircraft by ICAO
+address.
 
-Stack: stackk
-Link: sdlfkjhds`,
+Each track is smoothed with a Kalman
+filter. Confidence reflects how many
+sources see it, report freshness, and
+agreement after time-aligning positions.
+Operators can draw restricted zones and
+receive alerts when aircraft enter them.
+
+Viewing is public. Analysts sign in to
+draw or edit zones, with every change
+recorded in an audit trail. Roughly 7,000
+concurrent aircraft render on a
+GPU-instanced 3D map.
+
+Stack: Java 21, Spring Boot 3.4, Kafka,
+Postgres with PostGIS, Angular 18,
+MapLibre GL, deck.gl`,
         },
       ],
     },

@@ -250,8 +250,15 @@ function onKeyDown(e) {
         break;
       case "Backspace":
       case "h":
-      case "Escape":
       case "ArrowLeft":
+        leaveViewerMode();
+        if (state.selected) {
+          pendingCursorName = state.selected.name;
+          navigate(state.dirPath);
+        }
+        e.preventDefault();
+        break;
+      case "Escape":
         leaveViewerMode();
         e.preventDefault();
         break;

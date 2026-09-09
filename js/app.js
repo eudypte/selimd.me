@@ -164,21 +164,21 @@ function renderDirInfo(dirNode) {
     `${fileCount} file(s), ${dirCount} folder(s) here.`;
 }
 
-function renderViewer() {
-  if (state.selected) {
-    renderFileView(state.selected);
+// Show a single list entry in the right pane, without navigating. Anything
+// that isn't a file (a folder, "..", nothing at all) falls back to the info
+// for the folder being listed.
+function previewNode(node) {
+  if (node && node.type === "file") {
+    renderFileView(node);
   } else {
     renderDirInfo(state.dirNode);
   }
 }
 
-// Preview whatever the list cursor is currently on, without navigating.
-function previewNode(node) {
-  if (node && node.type === "file") {
-    renderFileView(node);
-  } else {
-    renderViewer();
-  }
+// In list mode the pane always follows the list cursor; an open file wins over
+// it, so going back from a file lands on that file rather than the info.
+function renderViewer() {
+  previewNode(state.selected || state.listing[state.cursor]);
 }
 
 function renderParentPane() {

@@ -53,15 +53,20 @@ pygame-widgets
           type: "file",
           content: `AEROFUSION
 ---------------------------------------
+Stack: Java 21, Spring Boot 3.4, Kafka,
+Postgres with PostGIS, Angular 18,
+MapLibre GL, deck.gl
+
 A multi-source air-track fusion and
 situational-awareness console. It
-ingests live ADS-B feeds from OpenSky
+ingests live [ADS-B](https://en.wikipedia.org/wiki/Automatic_Dependent_Surveillance%E2%80%93Broadcast) feeds from [OpenSky](https://opensky-network.org/)
 Network and adsb.lol, then correlates
 reports of the same aircraft by ICAO
 address.
 
-Each track is smoothed with a Kalman
-filter. Confidence reflects how many
+Each track is smoothed with a
+[Kalman filter](https://en.wikipedia.org/wiki/Kalman_filter). Confidence
+reflects how many
 sources see it, report freshness, and
 agreement after time-aligning positions.
 Operators can draw restricted zones and
@@ -71,11 +76,7 @@ Viewing is public. Analysts sign in to
 draw or edit zones, with every change
 recorded in an audit trail. Roughly 7,000
 concurrent aircraft render on a
-GPU-instanced 3D map.
-
-Stack: Java 21, Spring Boot 3.4, Kafka,
-Postgres with PostGIS, Angular 18,
-MapLibre GL, deck.gl`,
+GPU-instanced 3D map.`,
         },
       ],
     },

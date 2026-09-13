@@ -28,8 +28,11 @@ environment and agentic coding setup.`,
         {
           name: "basic-orbit-sim.txt",
           type: "file",
-          content: `BASIC ORBIT SIM
+          content: `BASIC ORBIT SIM  [GitHub](https://github.com/eudypte/basic-orbit-sim)
 ---------------------------------------
+Stack: Python, Pygame, pygame_gui,
+pygame-widgets
+
 A 2D solar system simulator. Simulates
 gravitational attraction between bodies
 using Newton's law of universal
@@ -45,12 +48,7 @@ and watch it get pulled into the
 system. Zoom with the scroll wheel,
 pause/resume, run at 2x speed, and
 toggle individual planets on or off
-from the settings panel.
-
-Stack: Python, Pygame, pygame_gui,
-pygame-widgets
-
-[View on GitHub](https://github.com/eudypte/basic-orbit-sim)`,
+from the settings panel.`,
         },
         {
           name: "aerofusion.txt",
@@ -85,7 +83,7 @@ GPU-instanced 3D map.`,
         {
           name: "second-look.txt",
           type: "file",
-          content: `SECOND LOOK
+          content: `SECOND LOOK  [Try it live](https://secondlook.selimd.me)  [GitHub](https://github.com/eudypte/second-look)
 ---------------------------------------
 Stack: TypeScript, Next.js, React,
 Claude Haiku 4.5, Google Safe Browsing,
@@ -112,10 +110,7 @@ cannot talk its way out.
 On held-out real texts it caught 84 of
 100 scams (84%) and flagged 6 of 180
 genuine personal and business messages
-(3.3%).
-
-[Try it live](https://secondlook.selimd.me)
-[View on GitHub](https://github.com/eudypte/second-look)`,
+(3.3%).`,
         },
       ],
     },

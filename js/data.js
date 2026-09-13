@@ -109,10 +109,10 @@ the warning but never lower it, so a
 scam claiming to be "verified safe"
 cannot talk its way out.
 
-In testing it flagged 165 of 200 real
-scam texts (82.5%). 27 of 210 genuine
-personal and business texts got a
-warning (12.9%), and 2 were rated red.
+On held-out real texts it caught 84 of
+100 scams (84%) and flagged 6 of 180
+genuine personal and business messages
+(3.3%).
 
 [Try it live](https://secondlook.selimd.me)
 [View on GitHub](https://github.com/eudypte/second-look)`,

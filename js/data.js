@@ -82,6 +82,41 @@ recorded in an audit trail. Roughly
 7,000 concurrent aircraft render on a
 GPU-instanced 3D map.`,
         },
+        {
+          name: "second-look.txt",
+          type: "file",
+          content: `SECOND LOOK
+---------------------------------------
+Stack: TypeScript, Next.js, React,
+Claude Haiku 4.5, Google Safe Browsing,
+Vercel
+
+A phone-first web app for people who
+are not technical, like your
+grandparents. Paste a worrying text
+message and get a plain-English answer
+on whether it looks like a scam, with
+the evidence behind it. It never opens
+the link.
+
+Code checks every link for site age via
+RDAP, brand lookalikes, free hosting,
+short links and Google Safe Browsing,
+then sets a minimum warning. One Claude
+call reads the message for pressure
+tactics and explains. The AI can raise
+the warning but never lower it, so a
+scam claiming to be "verified safe"
+cannot talk its way out.
+
+In testing it flagged 165 of 200 real
+scam texts (82.5%). 27 of 210 genuine
+personal and business texts got a
+warning (12.9%), and 2 were rated red.
+
+[Try it live](https://secondlook.selimd.me)
+[View on GitHub](https://github.com/eudypte/second-look)`,
+        },
       ],
     },
     {

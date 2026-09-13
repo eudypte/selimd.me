@@ -157,10 +157,10 @@ function renderDirInfo(dirNode) {
   const fileCount = dirNode.children.filter((c) => c.type === "file").length;
   const dirCount = dirNode.children.filter((c) => c.type === "dir").length;
   viewerEl.textContent =
-    `SELIM D. — PORTFOLIO\n` +
+    `SELIM D. - PORTFOLIO\n` +
     `${"-".repeat(40)}\n\n` +
     `Use arrow keys + Enter, or click, to\n` +
-    `browse. Start with ABOUT.TXT.\n\n` +
+    `browse. Start with ME.TXT.\n\n` +
     `${fileCount} file(s), ${dirCount} folder(s) here.`;
 }
 

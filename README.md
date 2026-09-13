@@ -1,1 +1,1 @@
-[personal website](selimd.me)
+[personal website](https://www.selimd.me/)

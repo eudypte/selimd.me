@@ -18,8 +18,11 @@ const state = {
   linkIndex: 0,
 };
 
+const paneRightEl = document.getElementById("pane-right");
+
 let pendingViewerFocus = false;
 let pendingCursorName = null;
+let pendingReveal = false;
 
 function setMode(mode) {
   state.mode = mode;
@@ -100,10 +103,16 @@ function renderList() {
     li.innerHTML = `<span class="name">${node.name}</span><span class="size">${sizeLabel(node)}</span>`;
     li.addEventListener("click", () => {
       state.cursor = i;
+      pendingReveal = true;
       openAt(i);
     });
-    li.addEventListener("mouseenter", () => previewNode(node));
-    li.addEventListener("mouseleave", () => {
+    // Hover preview is for mice only: a tap also fires enter/leave, and the
+    // leave would re-render the viewer under a link the finger just touched.
+    li.addEventListener("pointerenter", (e) => {
+      if (e.pointerType === "mouse") previewNode(node);
+    });
+    li.addEventListener("pointerleave", (e) => {
+      if (e.pointerType !== "mouse") return;
       renderViewer();
       if (state.mode === "viewer") focusLink(state.linkIndex);
     });
@@ -302,7 +311,21 @@ function onKeyDown(e) {
   }
 }
 
+// On small screens the viewer sits below the file list and the page scrolls.
+// After a click, scroll the pane that now matters (the viewer for a file, the
+// list for a folder) into view when its top is off-screen or near the bottom.
+// Side by side, both panes start at the top of the screen, so this never scrolls.
+function revealPane() {
+  const el = state.selected ? paneRightEl : navigatorEl;
+  const top = el.getBoundingClientRect().top;
+  if (top < 0 || top > window.innerHeight / 2) el.scrollIntoView({ block: "start" });
+}
+
 function afterRender() {
+  if (pendingReveal) {
+    pendingReveal = false;
+    revealPane();
+  }
   if (!pendingViewerFocus) return;
   pendingViewerFocus = false;
   if (state.selected && viewerLinks().length > 0) {
@@ -324,6 +347,11 @@ function applyHash() {
 }
 
 window.addEventListener("hashchange", applyHash);
+
+viewerEl.addEventListener("click", (e) => {
+  const link = e.target.closest("a.viewer-link");
+  if (link && link.getAttribute("href").startsWith("#")) pendingReveal = true;
+});
 
 window.addEventListener("DOMContentLoaded", () => {
   applyHash();

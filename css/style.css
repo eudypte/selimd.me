@@ -230,15 +230,21 @@ body.viewer-mode .file-list li.selected .size {
   color: inherit;
   text-decoration: underline;
 }
-.viewer-link:focus,
-.viewer-link:hover {
+.viewer-link:focus {
   outline: none;
   background: var(--nc-cyan);
   color: var(--nc-blue);
 }
 
-.file-list li:hover:not(.selected) {
-  background: rgba(255, 255, 255, 0.15);
+/* hover styles only for real pointers, so a tap does not leave a highlight behind */
+@media (hover: hover) {
+  .viewer-link:hover {
+    background: var(--nc-cyan);
+    color: var(--nc-blue);
+  }
+  .file-list li:hover:not(.selected) {
+    background: rgba(255, 255, 255, 0.15);
+  }
 }
 
 .status-bar {
@@ -268,5 +274,75 @@ body.viewer-mode .file-list li.selected .size {
 .fkeys span b {
   background: var(--nc-cyan);
   color: black;
+}
+
+/* narrow or short screens: the viewer no longer fits beside the file lists
+   (a 40-column viewer needs half of about 900px), so stack it below them and
+   let the page scroll instead of the panes */
+@media (max-width: 899px), (max-height: 499px) {
+  main {
+    display: flex;
+    flex-direction: column;
+    height: auto;
+    min-height: 100vh;
+    min-height: 100dvh;
+  }
+  .commander {
+    flex: 1;
+    flex-direction: column;
+    height: auto;
+  }
+  .navigator {
+    flex: none;
+  }
+  .navigator + .pane {
+    border-left: none;
+    border-top: 3px double var(--nc-cyan);
+  }
+  .file-list {
+    overflow-y: visible;
+  }
+  .file-list li {
+    align-items: center;
+    min-height: 44px;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .viewer-content {
+    overflow-y: visible;
+    overflow-wrap: break-word;
+  }
+}
+
+/* phones: one file list, text at the font's native 1:1 pixel size (19.2px,
+   so 40 columns take 320px), and no decorative function-key bar */
+@media (max-width: 599px), (max-height: 499px) {
+  .navigator.has-parent .pane-parent {
+    display: none;
+  }
+  .navigator .pane + .pane {
+    border-left: none;
+  }
+  .pane-title,
+  .file-list li,
+  .viewer-content,
+  .status-bar {
+    font-size: 19.2px;
+  }
+  .pane-title,
+  .file-list li,
+  .status-bar {
+    padding-inline: 8px;
+  }
+  .viewer-content {
+    padding: 8px;
+    line-height: 1.4;
+  }
+  .viewer-link {
+    padding-block: 0.2em;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .fkeys {
+    display: none;
+  }
 }
 

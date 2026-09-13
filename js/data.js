@@ -15,7 +15,10 @@ Browse the tree on the left, read the
 file on the right.
 
 See [projects](projects) or get in
-[touch](contact.txt).`,
+[touch](contact.txt).
+
+Check out my [dotfiles](dotfiles.txt) for my development
+environment and agentic coding setup.`,
     },
     {
       name: "projects",
@@ -88,6 +91,11 @@ GPU-instanced 3D map.`,
 Email:   [pselim4@outlook.com](mailto:pselim4@outlook.com)
 GitHub:  [github.com/eudypte](https://github.com/eudypte)
 LinkedIn: [linkedin.com/in/selimd](https://linkedin.com/in/selimd)`,
+    },
+    {
+      name: "dotfiles.txt",
+      type: "file",
+      content: ``,
     },
   ],
 };

@@ -28,6 +28,8 @@ function setMode(mode) {
 
 function sortChildren(children) {
   return [...(children || [])].sort((a, b) => {
+    // Entries marked sortLast stay below everything else in their folder.
+    if (!a.sortLast !== !b.sortLast) return a.sortLast ? 1 : -1;
     if (a.type !== b.type) return a.type === "dir" ? -1 : 1;
     return a.name.localeCompare(b.name);
   });

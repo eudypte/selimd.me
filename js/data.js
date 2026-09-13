@@ -78,6 +78,22 @@ recorded in an audit trail. Roughly
 7,000 concurrent aircraft render on a
 GPU-instanced 3D map.`,
         },
+        {
+          name: "dotfiles",
+          type: "dir",
+          sortLast: true,
+          children: [
+            {
+              name: "readme.txt",
+              type: "file",
+              content: `DOTFILES
+---------------------------------------
+Check out my dotfiles for my
+development environment and agentic
+coding setup.`,
+            },
+          ],
+        },
       ],
     },
     {

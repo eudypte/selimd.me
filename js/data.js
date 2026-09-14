@@ -53,7 +53,7 @@ from the settings panel.`,
         {
           name: "aerofusion.txt",
           type: "file",
-          content: `AEROFUSION
+          content: `AEROFUSION  [Try it live](https://aerofusion.selimd.me)
 ---------------------------------------
 Stack: Java 21, Spring Boot 3.4, Kafka,
 Postgres with PostGIS, Angular 18,

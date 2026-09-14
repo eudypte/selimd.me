@@ -7,7 +7,7 @@ const FS = {
       type: "file",
       content: `SELIM DUZER
 ---------------------------------------
-Software engineer.
+Aspiring software engineer.
 
 This site is a small portfolio built to
 look like an old two-pane file manager

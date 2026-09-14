@@ -126,7 +126,23 @@ LinkedIn: [linkedin.com/in/selimd](https://linkedin.com/in/selimd)`,
     {
       name: "dotfiles.txt",
       type: "file",
-      content: ``,
+      content: `DOTFILES  [GitHub](https://github.com/eudypte/dotfiles)
+---------------------------------------
+I like keeping my hands on the
+keyboard, so my Mac is tiled with
+[AeroSpace](https://github.com/nikitabobko/AeroSpace), an i3-like window manager,
+with a [SketchyBar](https://github.com/FelixKratz/SketchyBar) status bar I set up
+myself. The repo also has my
+JankyBorders, Alacritty, tmux and zsh
+config.
+
+I have been trying to keep up with the
+new agentic AI tools, and my current
+setup is coding agents like [pi](https://github.com/earendil-works/pi) running
+in [herdr](https://herdr.dev), a terminal workspace manager
+for agent sessions, with [firstmate](https://github.com/kunchenguid/firstmate)
+orchestrating several of them in
+parallel on isolated copies of a repo.`,
     },
   ],
 };

@@ -278,10 +278,10 @@ body.viewer-mode .file-list li.selected .size {
   .file-list li:hover:not(.selected) {
     background: var(--theme-hover-bg);
   }
-  .settings-popup li:hover:not(.current) {
+  .settings-popup li:hover:not(.selected) {
     background: var(--theme-hover-bg);
   }
-  .fkeys span:hover {
+  .fk-label:hover {
     cursor: pointer;
   }
 }

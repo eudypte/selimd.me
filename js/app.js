@@ -486,6 +486,12 @@ settingsOverlayEl.addEventListener("click", (e) => {
   if (e.target === settingsOverlayEl) closeSettings();
 });
 
+document.getElementById("sp-select").addEventListener("click", () => {
+  selectTheme(settingsItems[settingsCursor].dataset.theme);
+});
+
+document.getElementById("sp-cancel").addEventListener("click", closeSettings);
+
 function onSettingsKeyDown(e) {
   switch (e.key) {
     case "ArrowDown":
@@ -519,7 +525,10 @@ function onSettingsKeyDown(e) {
 }
 
 document.addEventListener("keydown", (e) => {
-  if (!settingsOverlayEl.hidden) onSettingsKeyDown(e);
+  if (!settingsOverlayEl.hidden) {
+    e.stopImmediatePropagation();
+    onSettingsKeyDown(e);
+  }
 });
 
 window.addEventListener("hashchange", applyHash);

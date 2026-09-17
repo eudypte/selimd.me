@@ -132,7 +132,7 @@ function escapeHtml(str) {
 function linkifyContent(raw) {
   return escapeHtml(raw).replace(/\[([^\]]+)\]\(([^)]+)\)/g, (match, label, path) => {
     if (/^[a-z][a-z0-9+.-]*:/i.test(path)) {
-      return `<a href="${path}" class="viewer-link" target="_blank" rel="noopener noreferrer">${label}</a>`;
+      return `<a href="${path}" class="viewer-link" target="_blank" rel="noopener noreferrer">${label}</a><span class="external-link-mark" aria-hidden="true">↗</span>`;
     }
     return `<a href="#/${path}" class="viewer-link">${label}</a>`;
   });

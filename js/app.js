@@ -268,6 +268,10 @@ function renderParentPane() {
     li.className = node.type === "file" ? "file" : "dir";
     if (node.name === activeName) li.classList.add("selected");
     li.innerHTML = `<span class="name">${node.name}</span><span class="size">${sizeLabel(node)}</span>`;
+    li.addEventListener("click", () => {
+      pendingReveal = true;
+      navigate([...state.dirPath.slice(0, -1), node.name]);
+    });
     parentListEl.appendChild(li);
   });
 }

@@ -309,6 +309,8 @@ function openAt(index, { focusViewer = false } = {}) {
 }
 
 function onKeyDown(e) {
+  if (!settingsOverlayEl.hidden) return;
+
   if (state.mode === "viewer") {
     switch (e.key) {
       case "ArrowDown":
@@ -415,6 +417,53 @@ function applyHash() {
   render();
   afterRender();
 }
+
+const settingsOverlayEl = document.getElementById("settings-overlay");
+const settingsOptionsEl = document.getElementById("settings-options");
+const fkeySettingsEl = document.getElementById("fkey-settings");
+
+function applyTheme(theme) {
+  if (theme === "orange") {
+    document.documentElement.dataset.theme = "orange";
+  } else {
+    delete document.documentElement.dataset.theme;
+  }
+  settingsOptionsEl.querySelectorAll("li").forEach((li) => {
+    li.classList.toggle("current", li.dataset.theme === theme);
+  });
+}
+
+function selectTheme(theme) {
+  localStorage.setItem("theme", theme);
+  applyTheme(theme);
+  closeSettings();
+}
+
+function openSettings() {
+  applyTheme(document.documentElement.dataset.theme === "orange" ? "orange" : "default");
+  settingsOverlayEl.hidden = false;
+}
+
+function closeSettings() {
+  settingsOverlayEl.hidden = true;
+}
+
+fkeySettingsEl.addEventListener("click", openSettings);
+
+settingsOptionsEl.querySelectorAll("li").forEach((li) => {
+  li.addEventListener("click", () => selectTheme(li.dataset.theme));
+});
+
+settingsOverlayEl.addEventListener("click", (e) => {
+  if (e.target === settingsOverlayEl) closeSettings();
+});
+
+document.addEventListener("keydown", (e) => {
+  if (!settingsOverlayEl.hidden && e.key === "Escape") {
+    closeSettings();
+    e.preventDefault();
+  }
+});
 
 window.addEventListener("hashchange", applyHash);
 

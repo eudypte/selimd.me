@@ -6,6 +6,12 @@
     <title>selimd.me</title>
     <link rel="icon" href="favicon.svg" type="image/svg+xml" />
     <link rel="stylesheet" href="css/style.css" />
+    <script>
+      (function () {
+        var theme = localStorage.getItem("theme");
+        if (theme === "orange") document.documentElement.dataset.theme = theme;
+      })();
+    </script>
   </head>
   <body class="crt">
     <main>
@@ -27,7 +33,7 @@
       </div>
       <div class="status-bar" id="status-bar">C:\</div>
       <div class="fkeys">
-        <span><b>1</b>Help</span>
+        <span id="fkey-settings"><b>1</b>Settings</span>
         <span><b>2</b>Menu</span>
         <span><b>3</b>View</span>
         <span><b>4</b>Edit</span>
@@ -37,6 +43,16 @@
         <span><b>8</b>Delete</span>
         <span><b>9</b>Menu</span>
         <span><b>0</b>Quit</span>
+      </div>
+      <div class="settings-overlay" id="settings-overlay" hidden>
+        <div class="settings-popup" role="dialog" aria-label="Settings">
+          <div class="sp-title">Settings</div>
+          <ul id="settings-options">
+            <li data-theme="default">Default</li>
+            <li data-theme="orange">Orange</li>
+          </ul>
+          <div class="sp-keys"><span><b>&crarr;</b>Select</span><span><b>Esc</b>Cancel</span></div>
+        </div>
       </div>
     </main>
     <script src="js/data.js"></script>

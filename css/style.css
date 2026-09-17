@@ -1,8 +1,47 @@
 :root {
-  --crt-red: rgb(218, 49, 49);
-  --crt-green: rgb(112, 159, 115);
-  --crt-blue: rgb(40, 129, 206);
-  --crt-scanline-opacity: .50;
+  --theme-screen-bg: rgb(25, 25, 30);
+  --theme-screen-text: rgba(255, 255, 255, 0.75);
+  --theme-glow-offset-a: rgba(255, 0, 255, 0.5);
+  --theme-glow-offset-b: rgba(0, 255, 255, 0.4);
+  --theme-scanline-a: rgb(218, 49, 49);
+  --theme-scanline-b: rgb(112, 159, 115);
+  --theme-scanline-c: rgb(40, 129, 206);
+  --theme-scanline-opacity: .50;
+  --theme-background: rgb(0, 0, 170);
+  --theme-accent: rgb(0, 170, 170);
+  --theme-accent-strong: rgb(85, 255, 255);
+  --theme-chrome: rgb(170, 170, 170);
+  --theme-text: rgb(255, 255, 255);
+  --theme-content: rgb(255, 255, 85);
+  --theme-selected-bg: var(--theme-accent);
+  --theme-selected-text: var(--theme-background);
+  --theme-hover-bg: rgba(255, 255, 255, 0.15);
+  --theme-inactive-selected-bg: rgba(0, 170, 170, 0.35);
+  --theme-keybar-bg: rgb(0, 0, 0);
+  --theme-key-text: rgb(0, 0, 0);
+}
+
+:root[data-theme="orange"] {
+  --theme-screen-bg: rgb(0, 0, 0);
+  --theme-screen-text: rgba(255, 229, 196, 0.85);
+  --theme-glow-offset-a: rgba(255, 123, 0, 0.45);
+  --theme-glow-offset-b: rgba(255, 202, 124, 0.3);
+  --theme-scanline-a: rgb(232, 116, 35);
+  --theme-scanline-b: rgb(255, 168, 76);
+  --theme-scanline-c: rgb(0, 0, 0);
+  --theme-scanline-opacity: .35;
+  --theme-background: rgb(0, 0, 0);
+  --theme-accent: rgb(232, 116, 35);
+  --theme-accent-strong: rgb(255, 168, 76);
+  --theme-chrome: rgb(232, 116, 35);
+  --theme-text: rgb(255, 229, 196);
+  --theme-content: rgb(255, 168, 76);
+  --theme-selected-bg: rgb(232, 116, 35);
+  --theme-selected-text: rgb(0, 0, 0);
+  --theme-hover-bg: rgba(232, 116, 35, 0.22);
+  --theme-inactive-selected-bg: rgba(232, 116, 35, 0.35);
+  --theme-keybar-bg: rgb(0, 0, 0);
+  --theme-key-text: rgb(0, 0, 0);
 }
 
 @font-face {
@@ -22,7 +61,7 @@ html {
 main {
   height: 100vh;
   height: 100dvh;
-  color: rgba(255, 255, 255, 0.75);
+  color: var(--theme-screen-text);
 }
 
 .pink {
@@ -77,16 +116,16 @@ main {
 }
 
 .crt {
-  background-color: rgb(25, 25, 30);
-  text-shadow: 0 0 0.2em currentColor, 1px 1px rgba(255, 0, 255, 0.5),
-    -1px -1px rgba(0, 255, 255, 0.4);
+  background-color: var(--theme-screen-bg);
+  text-shadow: 0 0 0.2em currentColor, 1px 1px var(--theme-glow-offset-a),
+    -1px -1px var(--theme-glow-offset-b);
   position: relative;
   &:before,
   &:after {
     content: "";
     transform: translateZ(0);
     pointer-events: none;
-    opacity: var(--crt-scanline-opacity);
+    opacity: var(--theme-scanline-opacity);
     mix-blend-mode: overlay;
     position: absolute;
     height: 100%;
@@ -98,29 +137,19 @@ main {
 
   &:before {
     background: repeating-linear-gradient(
-      var(--crt-red) 0px,
-      var(--crt-green) 2px,
-      var(--crt-blue) 4px
+      var(--theme-scanline-a) 0px,
+      var(--theme-scanline-b) 2px,
+      var(--theme-scanline-c) 4px
     );
   }
   &:after {
     background: repeating-linear-gradient(
       90deg,
-      var(--crt-red) 1px,
-      var(--crt-green) 2px,
-      var(--crt-blue) 3px
+      var(--theme-scanline-a) 1px,
+      var(--theme-scanline-b) 2px,
+      var(--theme-scanline-c) 3px
     );
   }
-}
-
-/* norton commander theme */
-:root {
-  --nc-blue: rgb(0, 0, 170);
-  --nc-cyan: rgb(0, 170, 170);
-  --nc-lightcyan: rgb(85, 255, 255);
-  --nc-grey: rgb(170, 170, 170);
-  --nc-white: rgb(255, 255, 255);
-  --nc-yellow: rgb(255, 255, 85);
 }
 
 *,
@@ -135,7 +164,7 @@ body {
 .commander {
   display: flex;
   height: calc(100% - 3rem);
-  border: 3px double var(--nc-cyan);
+  border: 3px double var(--theme-accent);
   border-bottom: none;
 }
 
@@ -144,11 +173,11 @@ body {
   display: flex;
   flex-direction: column;
   min-width: 0;
-  background: var(--nc-blue);
+  background: var(--theme-background);
 }
 .pane + .pane,
 .navigator + .pane {
-  border-left: 3px double var(--nc-cyan);
+  border-left: 3px double var(--theme-accent);
 }
 
 .navigator {
@@ -169,8 +198,8 @@ body {
 }
 
 .pane-title {
-  background: var(--nc-grey);
-  color: var(--nc-blue);
+  background: var(--theme-chrome);
+  color: var(--theme-background);
   text-align: center;
   font-size: 0.85rem;
   padding: 0 0.5rem;
@@ -191,29 +220,29 @@ body {
   justify-content: space-between;
   gap: 0.5rem;
   padding: 0 0.5rem;
-  color: var(--nc-white);
+  color: var(--theme-text);
   cursor: pointer;
   font-size: 0.85rem;
 }
 .file-list li.file {
-  color: var(--nc-lightcyan);
+  color: var(--theme-accent-strong);
 }
 .file-list li .size {
-  color: var(--nc-cyan);
+  color: var(--theme-accent);
 }
 .file-list li.selected {
-  background: var(--nc-cyan);
-  color: var(--nc-blue);
+  background: var(--theme-selected-bg);
+  color: var(--theme-selected-text);
 }
 .file-list li.selected .size {
-  color: var(--nc-blue);
+  color: var(--theme-selected-text);
 }
 body.viewer-mode .file-list li.selected {
-  background: rgba(0, 170, 170, 0.35);
-  color: var(--nc-lightcyan);
+  background: var(--theme-inactive-selected-bg);
+  color: var(--theme-accent-strong);
 }
 body.viewer-mode .file-list li.selected .size {
-  color: var(--nc-lightcyan);
+  color: var(--theme-accent-strong);
 }
 
 .viewer-content {
@@ -221,7 +250,7 @@ body.viewer-mode .file-list li.selected .size {
   padding: 0.5rem;
   overflow-y: auto;
   flex: 1;
-  color: var(--nc-yellow);
+  color: var(--theme-content);
   font-family: inherit;
   font-size: 0.85rem;
   white-space: pre-wrap;
@@ -232,8 +261,8 @@ body.viewer-mode .file-list li.selected .size {
 }
 .viewer-link:focus {
   outline: none;
-  background: var(--nc-cyan);
-  color: var(--nc-blue);
+  background: var(--theme-selected-bg);
+  color: var(--theme-selected-text);
 }
 .external-link-mark {
   opacity: 0.7;
@@ -243,17 +272,23 @@ body.viewer-mode .file-list li.selected .size {
 /* hover styles only for real pointers, so a tap does not leave a highlight behind */
 @media (hover: hover) {
   .viewer-link:hover {
-    background: var(--nc-cyan);
-    color: var(--nc-blue);
+    background: var(--theme-selected-bg);
+    color: var(--theme-selected-text);
   }
   .file-list li:hover:not(.selected) {
-    background: rgba(255, 255, 255, 0.15);
+    background: var(--theme-hover-bg);
+  }
+  .settings-popup li:hover:not(.current) {
+    background: var(--theme-hover-bg);
+  }
+  .fkeys span:hover {
+    cursor: pointer;
   }
 }
 
 .status-bar {
-  background: var(--nc-grey);
-  color: var(--nc-blue);
+  background: var(--theme-chrome);
+  color: var(--theme-background);
   padding: 0 0.5rem;
   font-size: 0.85rem;
   white-space: nowrap;
@@ -263,21 +298,80 @@ body.viewer-mode .file-list li.selected .size {
 
 .fkeys {
   display: flex;
-  background: rgb(0, 0, 0);
+  background: var(--theme-keybar-bg);
   font-size: 0.7rem;
 }
 .fkeys span {
   flex: 1;
-  color: var(--nc-white);
+  color: var(--theme-text);
   text-align: center;
-  border-left: 1px solid var(--nc-grey);
+  border-left: 1px solid var(--theme-chrome);
 }
 .fkeys span:first-child {
   border-left: none;
 }
 .fkeys span b {
-  background: var(--nc-cyan);
-  color: black;
+  background: var(--theme-accent);
+  color: var(--theme-key-text);
+}
+
+.settings-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+}
+
+.settings-popup {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 18rem;
+  background: var(--theme-background);
+  border: 3px double var(--theme-accent);
+  box-shadow: 6px 6px 0 rgba(0, 0, 0, 0.6);
+}
+.settings-popup .sp-title {
+  background: var(--theme-chrome);
+  color: var(--theme-background);
+  text-align: center;
+  font-size: 0.85rem;
+  padding: 0.15rem 0.5rem;
+}
+.settings-popup ul {
+  list-style: none;
+  margin: 0;
+  padding: 0.5rem 0;
+}
+.settings-popup li {
+  padding: 0.2rem 1rem;
+  color: var(--theme-text);
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+.settings-popup li.current {
+  background: var(--theme-selected-bg);
+  color: var(--theme-selected-text);
+}
+.settings-popup .sp-keys {
+  display: flex;
+  background: var(--theme-keybar-bg);
+  font-size: 0.65rem;
+  margin-top: 0.25rem;
+}
+.settings-popup .sp-keys span {
+  flex: 1;
+  color: var(--theme-text);
+  text-align: center;
+  border-left: 1px solid var(--theme-chrome);
+  padding: 0.1rem 0;
+}
+.settings-popup .sp-keys span:first-child {
+  border-left: none;
+}
+.settings-popup .sp-keys span b {
+  background: var(--theme-accent);
+  color: var(--theme-key-text);
 }
 
 /* narrow or short screens: the viewer no longer fits beside the file lists
@@ -301,7 +395,7 @@ body.viewer-mode .file-list li.selected .size {
   }
   .navigator + .pane {
     border-left: none;
-    border-top: 3px double var(--nc-cyan);
+    border-top: 3px double var(--theme-accent);
   }
   .file-list {
     overflow-y: visible;
@@ -349,4 +443,3 @@ body.viewer-mode .file-list li.selected .size {
     display: none;
   }
 }
-

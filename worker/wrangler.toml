@@ -4,4 +4,4 @@ compatibility_date = "2024-09-01"
 
 [[kv_namespaces]]
 binding = "SPOTIFY_HISTORY"
-id = "REPLACE_WITH_SPOTIFY_HISTORY_NAMESPACE_ID"
+id = "7c7e8af3eb7d44af8d1c9db65ef75a89"

@@ -91,6 +91,7 @@ function dosPath(segments) {
 function sizeLabel(node) {
   if (node.type === "up") return "UP--DIR";
   if (node.type === "dir") return "SUB-DIR";
+  if (node.dynamic) return "LIVE";
   return `${node.content.length}`;
 }
 
@@ -156,7 +157,67 @@ function leaveViewerMode() {
   setMode("list");
 }
 
+function relativeTime(iso) {
+  const then = new Date(iso).getTime();
+  if (Number.isNaN(then)) return "";
+  const diffSec = Math.max(0, Math.round((Date.now() - then) / 1000));
+  if (diffSec < 60) return "just now";
+  const diffMin = Math.round(diffSec / 60);
+  if (diffMin < 60) return `${diffMin}m ago`;
+  const diffHr = Math.round(diffMin / 60);
+  if (diffHr < 24) return `${diffHr}h ago`;
+  const diffDay = Math.round(diffHr / 24);
+  return `${diffDay}d ago`;
+}
+
+const SPOTIFY_PLACEHOLDER =
+  `RECENTLY PLAYED\n` +
+  `${"-".repeat(40)}\n\n` +
+  `No listening history yet. Check back\n` +
+  `once the sync job has run.`;
+
+function formatSpotifyContent(tracks) {
+  if (!Array.isArray(tracks) || tracks.length === 0) return SPOTIFY_PLACEHOLDER;
+  const lines = tracks.map((t) => {
+    const artists = Array.isArray(t.artists) ? t.artists.join(", ") : t.artist || "";
+    const when = t.playedAt ? relativeTime(t.playedAt) : "";
+    const title = t.url ? `[${t.name}](${t.url})` : t.name;
+    return `${title} - ${artists}${when ? `  (${when})` : ""}`;
+  });
+  return `RECENTLY PLAYED\n${"-".repeat(40)}\n\n${lines.join("\n")}`;
+}
+
+let spotifyCache = null;
+
+function renderSpotifyView(node) {
+  rightTitleEl.textContent = node.name.toUpperCase();
+  if (spotifyCache) {
+    viewerEl.innerHTML = linkifyContent(formatSpotifyContent(spotifyCache));
+    return;
+  }
+  viewerEl.innerHTML = linkifyContent(
+    `RECENTLY PLAYED\n${"-".repeat(40)}\n\nLoading...`,
+  );
+  fetch("data/spotify-recent.json", { cache: "no-store" })
+    .then((res) => (res.ok ? res.json() : Promise.reject(res.status)))
+    .then((data) => {
+      spotifyCache = Array.isArray(data) ? data : data.tracks || [];
+      if (state.selected === node) {
+        viewerEl.innerHTML = linkifyContent(formatSpotifyContent(spotifyCache));
+      }
+    })
+    .catch(() => {
+      if (state.selected === node) {
+        viewerEl.innerHTML = linkifyContent(SPOTIFY_PLACEHOLDER);
+      }
+    });
+}
+
 function renderFileView(node) {
+  if (node.dynamic === "spotify") {
+    renderSpotifyView(node);
+    return;
+  }
   rightTitleEl.textContent = node.name.toUpperCase();
   viewerEl.innerHTML = linkifyContent(node.content);
 }

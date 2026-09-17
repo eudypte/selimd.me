@@ -19,7 +19,10 @@ See [projects](projects) or get in
 [touch](contact.txt).
 
 Check out my [dotfiles](dotfiles.txt) for my development
-environment and agentic coding setup.`,
+environment and agentic coding setup.
+
+See what I'm listening to at
+[music](personal/music.txt).`,
     },
     {
       name: "projects",
@@ -111,6 +114,17 @@ On held-out real texts it caught 84 of
 100 scams (84%) and flagged 6 of 180
 genuine personal and business messages
 (3.3%).`,
+        },
+      ],
+    },
+    {
+      name: "personal",
+      type: "dir",
+      children: [
+        {
+          name: "music.txt",
+          type: "file",
+          dynamic: "spotify",
         },
       ],
     },

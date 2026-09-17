@@ -203,7 +203,7 @@ function renderSpotifyView(node) {
   viewerEl.innerHTML = linkifyContent(
     `RECENTLY PLAYED\n${"-".repeat(40)}\n\nLoading...`,
   );
-  fetch("data/spotify-recent.json", { cache: "no-store" })
+  fetch("https://spotify-proxy.eudypte.workers.dev", { cache: "no-store" })
     .then((res) => (res.ok ? res.json() : Promise.reject(res.status)))
     .then((data) => {
       spotifyCache = Array.isArray(data) ? data : data.tracks || [];

@@ -421,6 +421,13 @@ function applyHash() {
 const settingsOverlayEl = document.getElementById("settings-overlay");
 const settingsOptionsEl = document.getElementById("settings-options");
 const fkeySettingsEl = document.getElementById("fkey-settings");
+const settingsItems = [...settingsOptionsEl.querySelectorAll("li")];
+
+let settingsCursor = 0;
+
+function currentTheme() {
+  return document.documentElement.dataset.theme === "orange" ? "orange" : "default";
+}
 
 function applyTheme(theme) {
   if (theme === "orange") {
@@ -428,8 +435,12 @@ function applyTheme(theme) {
   } else {
     delete document.documentElement.dataset.theme;
   }
-  settingsOptionsEl.querySelectorAll("li").forEach((li) => {
-    li.classList.toggle("current", li.dataset.theme === theme);
+}
+
+function renderSettings() {
+  settingsItems.forEach((li, i) => {
+    li.classList.toggle("current", li.dataset.theme === currentTheme());
+    li.classList.toggle("selected", i === settingsCursor);
   });
 }
 
@@ -440,7 +451,11 @@ function selectTheme(theme) {
 }
 
 function openSettings() {
-  applyTheme(document.documentElement.dataset.theme === "orange" ? "orange" : "default");
+  settingsCursor = Math.max(
+    settingsItems.findIndex((li) => li.dataset.theme === currentTheme()),
+    0,
+  );
+  renderSettings();
   settingsOverlayEl.hidden = false;
 }
 
@@ -450,19 +465,46 @@ function closeSettings() {
 
 fkeySettingsEl.addEventListener("click", openSettings);
 
-settingsOptionsEl.querySelectorAll("li").forEach((li) => {
-  li.addEventListener("click", () => selectTheme(li.dataset.theme));
+settingsItems.forEach((li, i) => {
+  li.addEventListener("click", () => {
+    settingsCursor = i;
+    selectTheme(li.dataset.theme);
+  });
 });
 
 settingsOverlayEl.addEventListener("click", (e) => {
   if (e.target === settingsOverlayEl) closeSettings();
 });
 
-document.addEventListener("keydown", (e) => {
-  if (!settingsOverlayEl.hidden && e.key === "Escape") {
-    closeSettings();
-    e.preventDefault();
+function onSettingsKeyDown(e) {
+  switch (e.key) {
+    case "ArrowDown":
+    case "j":
+      settingsCursor = Math.min(settingsCursor + 1, settingsItems.length - 1);
+      renderSettings();
+      e.preventDefault();
+      break;
+    case "ArrowUp":
+    case "k":
+      settingsCursor = Math.max(settingsCursor - 1, 0);
+      renderSettings();
+      e.preventDefault();
+      break;
+    case "ArrowRight":
+    case "Enter":
+    case "l":
+      selectTheme(settingsItems[settingsCursor].dataset.theme);
+      e.preventDefault();
+      break;
+    case "Escape":
+      closeSettings();
+      e.preventDefault();
+      break;
   }
+}
+
+document.addEventListener("keydown", (e) => {
+  if (!settingsOverlayEl.hidden) onSettingsKeyDown(e);
 });
 
 window.addEventListener("hashchange", applyHash);

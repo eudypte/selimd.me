@@ -132,7 +132,7 @@ main {
     width: 100%;
     left: 0;
     top: 0;
-    z-index: 1;
+    z-index: 20;
   }
 
   &:before {
@@ -349,7 +349,10 @@ body.viewer-mode .file-list li.selected .size {
   font-size: 0.85rem;
   cursor: pointer;
 }
-.settings-popup li.current {
+.settings-popup li.current::before {
+  content: "* ";
+}
+.settings-popup li.selected {
   background: var(--theme-selected-bg);
   color: var(--theme-selected-text);
 }

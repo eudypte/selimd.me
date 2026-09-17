@@ -311,6 +311,12 @@ function openAt(index, { focusViewer = false } = {}) {
 function onKeyDown(e) {
   if (!settingsOverlayEl.hidden) return;
 
+  if (e.key === "1") {
+    openSettings();
+    e.preventDefault();
+    return;
+  }
+
   if (state.mode === "viewer") {
     switch (e.key) {
       case "ArrowDown":
@@ -444,9 +450,13 @@ function renderSettings() {
   });
 }
 
-function selectTheme(theme) {
+function saveTheme(theme) {
   localStorage.setItem("theme", theme);
   applyTheme(theme);
+}
+
+function selectTheme(theme) {
+  saveTheme(theme);
   closeSettings();
 }
 
@@ -494,6 +504,11 @@ function onSettingsKeyDown(e) {
     case "Enter":
     case "l":
       selectTheme(settingsItems[settingsCursor].dataset.theme);
+      e.preventDefault();
+      break;
+    case " ":
+      saveTheme(settingsItems[settingsCursor].dataset.theme);
+      renderSettings();
       e.preventDefault();
       break;
     case "Escape":

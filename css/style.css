@@ -362,14 +362,14 @@ body.viewer-mode .file-list li.selected .size {
   font-size: 0.65rem;
   margin-top: 0.25rem;
 }
-.settings-popup .sp-keys span {
+.settings-popup .sp-keys > span {
   flex: 1;
   color: var(--theme-text);
   text-align: center;
   border-left: 1px solid var(--theme-chrome);
   padding: 0.1rem 0;
 }
-.settings-popup .sp-keys span:first-child {
+.settings-popup .sp-keys > span:first-child {
   border-left: none;
 }
 .settings-popup .sp-keys span b {

@@ -5,7 +5,7 @@ const fileListEl = document.getElementById("file-list");
 const leftTitleEl = document.getElementById("left-title");
 const rightTitleEl = document.getElementById("right-title");
 const viewerEl = document.getElementById("viewer-content");
-const statusBarEl = document.getElementById("status-bar");
+const statusBarEl = document.getElementById("status-bar-text");
 
 const state = {
   dirNode: FS,
@@ -427,6 +427,7 @@ function applyHash() {
 const settingsOverlayEl = document.getElementById("settings-overlay");
 const settingsOptionsEl = document.getElementById("settings-options");
 const fkeySettingsEl = document.getElementById("fkey-settings");
+const statusSettingsBtnEl = document.getElementById("status-settings-btn");
 const settingsItems = [...settingsOptionsEl.querySelectorAll("li")];
 
 let settingsCursor = 0;
@@ -474,6 +475,7 @@ function closeSettings() {
 }
 
 fkeySettingsEl.addEventListener("click", openSettings);
+statusSettingsBtnEl.addEventListener("click", openSettings);
 
 settingsItems.forEach((li, i) => {
   li.addEventListener("click", () => {

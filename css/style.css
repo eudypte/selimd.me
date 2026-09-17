@@ -292,8 +292,25 @@ body.viewer-mode .file-list li.selected .size {
   padding: 0 0.5rem;
   font-size: 0.85rem;
   white-space: nowrap;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+#status-bar-text {
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.status-settings-btn {
+  display: none;
+  flex: none;
+  border: none;
+  background: none;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+  padding: 0;
 }
 
 .fkeys {
@@ -444,5 +461,15 @@ body.viewer-mode .file-list li.selected .size {
   }
   .fkeys {
     display: none;
+  }
+  .status-settings-btn {
+    display: block;
+    min-width: 44px;
+    min-height: 44px;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .settings-popup {
+    width: calc(100% - 2rem);
+    max-width: 18rem;
   }
 }

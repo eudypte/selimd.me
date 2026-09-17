@@ -22,7 +22,10 @@
             <ul class="file-list" id="parent-list"></ul>
           </div>
           <div class="pane" id="pane-left">
-            <div class="pane-title" id="left-title">C:\</div>
+            <div class="pane-title pane-title--file" id="left-title">
+              <span id="left-title-text">C:\</span>
+              <button type="button" class="pane-title-settings-btn" id="pane-title-settings-btn" aria-label="Settings">&equiv;</button>
+            </div>
             <ul class="file-list" id="file-list"></ul>
           </div>
         </div>
@@ -33,7 +36,6 @@
       </div>
       <div class="status-bar" id="status-bar">
         <span id="status-bar-text">C:\</span>
-        <button type="button" class="status-settings-btn" id="status-settings-btn" aria-label="Settings">⚙</button>
       </div>
       <div class="fkeys">
         <span><b>1</b><span class="fk-label" id="fkey-settings">Settings</span></span>

@@ -371,15 +371,14 @@ body.viewer-mode .file-list li.selected .size {
   text-overflow: ellipsis;
 }
 
-.status-settings-btn {
+.pane-title-settings-btn {
   display: none;
-  flex: none;
   border: none;
   background: none;
   color: inherit;
   font: inherit;
   cursor: pointer;
-  padding: 0;
+  padding: 0 0.2em;
 }
 
 .fkeys {
@@ -531,10 +530,24 @@ body.viewer-mode .file-list li.selected .size {
   .fkeys {
     display: none;
   }
-  .status-settings-btn {
+  .pane-title--file {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5em;
+  }
+  .pane-title--file span {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .pane-title-settings-btn {
     display: block;
-    min-width: 44px;
-    min-height: 44px;
+    flex: none;
+    min-width: 32px;
+    min-height: 32px;
     -webkit-tap-highlight-color: transparent;
   }
   .settings-popup {

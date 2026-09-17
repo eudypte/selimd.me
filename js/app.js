@@ -2,7 +2,7 @@ const navigatorEl = document.getElementById("navigator");
 const parentListEl = document.getElementById("parent-list");
 const parentTitleEl = document.getElementById("parent-title");
 const fileListEl = document.getElementById("file-list");
-const leftTitleEl = document.getElementById("left-title");
+const leftTitleEl = document.getElementById("left-title-text");
 const rightTitleEl = document.getElementById("right-title");
 const viewerEl = document.getElementById("viewer-content");
 const statusBarEl = document.getElementById("status-bar-text");
@@ -427,7 +427,7 @@ function applyHash() {
 const settingsOverlayEl = document.getElementById("settings-overlay");
 const settingsOptionsEl = document.getElementById("settings-options");
 const fkeySettingsEl = document.getElementById("fkey-settings");
-const statusSettingsBtnEl = document.getElementById("status-settings-btn");
+const paneTitleSettingsBtnEl = document.getElementById("pane-title-settings-btn");
 const settingsItems = [...settingsOptionsEl.querySelectorAll("li")];
 
 let settingsCursor = 0;
@@ -475,7 +475,7 @@ function closeSettings() {
 }
 
 fkeySettingsEl.addEventListener("click", openSettings);
-statusSettingsBtnEl.addEventListener("click", openSettings);
+paneTitleSettingsBtnEl.addEventListener("click", openSettings);
 
 settingsItems.forEach((li, i) => {
   li.addEventListener("click", () => {

@@ -1,0 +1,7 @@
+name = "spotify-proxy"
+main = "spotify-proxy.js"
+compatibility_date = "2024-09-01"
+
+[[kv_namespaces]]
+binding = "SPOTIFY_HISTORY"
+id = "REPLACE_WITH_SPOTIFY_HISTORY_NAMESPACE_ID"

@@ -44,6 +44,75 @@
   --theme-key-text: rgb(0, 0, 0);
 }
 
+:root[data-theme="phosphor"] {
+  --theme-screen-bg: rgb(4, 12, 6);
+  --theme-screen-text: rgba(150, 255, 170, 0.85);
+  --theme-glow-offset-a: rgba(70, 255, 130, 0.45);
+  --theme-glow-offset-b: rgba(10, 130, 70, 0.3);
+  --theme-scanline-a: rgb(30, 170, 80);
+  --theme-scanline-b: rgb(110, 255, 150);
+  --theme-scanline-c: rgb(0, 0, 0);
+  --theme-scanline-opacity: .35;
+  --theme-background: rgb(0, 24, 8);
+  --theme-accent: rgb(50, 190, 100);
+  --theme-accent-strong: rgb(130, 255, 160);
+  --theme-chrome: rgb(90, 220, 130);
+  --theme-text: rgb(190, 255, 200);
+  --theme-content: rgb(140, 255, 170);
+  --theme-selected-bg: rgb(50, 190, 100);
+  --theme-selected-text: rgb(0, 24, 8);
+  --theme-hover-bg: rgba(130, 255, 160, 0.18);
+  --theme-inactive-selected-bg: rgba(50, 190, 100, 0.35);
+  --theme-keybar-bg: rgb(0, 0, 0);
+  --theme-key-text: rgb(0, 0, 0);
+}
+
+:root[data-theme="paper"] {
+  --theme-screen-bg: rgb(228, 222, 206);
+  --theme-screen-text: rgba(42, 37, 28, 0.85);
+  --theme-glow-offset-a: rgba(120, 100, 60, 0.3);
+  --theme-glow-offset-b: rgba(190, 180, 150, 0.25);
+  --theme-scanline-a: rgb(208, 198, 172);
+  --theme-scanline-b: rgb(236, 229, 212);
+  --theme-scanline-c: rgb(255, 253, 243);
+  --theme-scanline-opacity: .25;
+  --theme-background: rgb(244, 240, 226);
+  --theme-accent: rgb(120, 100, 60);
+  --theme-accent-strong: rgb(70, 55, 28);
+  --theme-chrome: rgb(42, 37, 28);
+  --theme-text: rgb(42, 37, 28);
+  --theme-content: rgb(90, 70, 38);
+  --theme-selected-bg: rgb(120, 100, 60);
+  --theme-selected-text: rgb(244, 240, 226);
+  --theme-hover-bg: rgba(42, 37, 28, 0.12);
+  --theme-inactive-selected-bg: rgba(120, 100, 60, 0.25);
+  --theme-keybar-bg: rgb(244, 240, 226);
+  --theme-key-text: rgb(244, 240, 226);
+}
+
+:root[data-theme="slate"] {
+  --theme-screen-bg: rgb(13, 15, 21);
+  --theme-screen-text: rgba(224, 224, 234, 0.8);
+  --theme-glow-offset-a: rgba(255, 140, 40, 0.4);
+  --theme-glow-offset-b: rgba(80, 140, 255, 0.35);
+  --theme-scanline-a: rgb(90, 100, 130);
+  --theme-scanline-b: rgb(180, 185, 200);
+  --theme-scanline-c: rgb(35, 38, 52);
+  --theme-scanline-opacity: .40;
+  --theme-background: rgb(54, 59, 84);
+  --theme-accent: rgb(255, 150, 50);
+  --theme-accent-strong: rgb(255, 190, 110);
+  --theme-chrome: rgb(200, 200, 210);
+  --theme-text: rgb(230, 230, 238);
+  --theme-content: rgb(140, 190, 255);
+  --theme-selected-bg: rgb(255, 150, 50);
+  --theme-selected-text: rgb(20, 20, 28);
+  --theme-hover-bg: rgba(255, 255, 255, 0.14);
+  --theme-inactive-selected-bg: rgba(255, 150, 50, 0.3);
+  --theme-keybar-bg: rgb(20, 20, 28);
+  --theme-key-text: rgb(20, 20, 28);
+}
+
 @font-face {
   font-family: "IBM VGA";
   src: url("../fonts/Ac437_IBM_VGA_8x16.ttf") format("truetype");

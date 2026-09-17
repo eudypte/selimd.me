@@ -9,7 +9,7 @@
     <script>
       (function () {
         var theme = localStorage.getItem("theme");
-        if (theme === "orange") document.documentElement.dataset.theme = theme;
+        if (theme && theme !== "default") document.documentElement.dataset.theme = theme;
       })();
     </script>
   </head>
@@ -53,6 +53,9 @@
           <ul id="settings-options">
             <li data-theme="default">Default</li>
             <li data-theme="orange">Orange</li>
+            <li data-theme="phosphor">Phosphor</li>
+            <li data-theme="paper">Paper</li>
+            <li data-theme="slate">Slate</li>
           </ul>
           <div class="sp-keys"><span><b>&crarr;</b><span class="fk-label" id="sp-select">Select</span></span><span><b>Esc</b><span class="fk-label" id="sp-cancel">Cancel</span></span></div>
         </div>

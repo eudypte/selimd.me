@@ -433,12 +433,12 @@ const settingsItems = [...settingsOptionsEl.querySelectorAll("li")];
 let settingsCursor = 0;
 
 function currentTheme() {
-  return document.documentElement.dataset.theme === "orange" ? "orange" : "default";
+  return document.documentElement.dataset.theme || "default";
 }
 
 function applyTheme(theme) {
-  if (theme === "orange") {
-    document.documentElement.dataset.theme = "orange";
+  if (theme && theme !== "default") {
+    document.documentElement.dataset.theme = theme;
   } else {
     delete document.documentElement.dataset.theme;
   }

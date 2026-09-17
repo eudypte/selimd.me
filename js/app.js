@@ -170,21 +170,26 @@ function relativeTime(iso) {
   return `${diffDay}d ago`;
 }
 
+const SPOTIFY_PROFILE_URL = "https://open.spotify.com/user/goodgametr";
+
 const SPOTIFY_PLACEHOLDER =
-  `RECENTLY PLAYED\n` +
+  `RECENTLY PLAYED  [check out my spotify](${SPOTIFY_PROFILE_URL})\n` +
   `${"-".repeat(40)}\n\n` +
   `No listening history yet. Check back\n` +
   `once the sync job has run.`;
 
 function formatSpotifyContent(tracks) {
   if (!Array.isArray(tracks) || tracks.length === 0) return SPOTIFY_PLACEHOLDER;
-  const lines = tracks.map((t) => {
+  const entries = tracks.map((t) => {
     const artists = Array.isArray(t.artists) ? t.artists.join(", ") : t.artist || "";
     const when = t.playedAt ? relativeTime(t.playedAt) : "";
     const title = t.url ? `[${t.name}](${t.url})` : t.name;
-    return `${title} - ${artists}${when ? `  (${when})` : ""}`;
+    return `- ${title}\n    ${artists}${when ? ` · ${when}` : ""}`;
   });
-  return `RECENTLY PLAYED\n${"-".repeat(40)}\n\n${lines.join("\n")}`;
+  return (
+    `RECENTLY PLAYED  [check out my spotify](${SPOTIFY_PROFILE_URL})\n${"-".repeat(40)}\n\n` +
+    entries.join("\n\n")
+  );
 }
 
 let spotifyCache = null;

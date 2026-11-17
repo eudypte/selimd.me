@@ -32,6 +32,7 @@ function setMode(mode) {
 function sortChildren(children) {
   return [...(children || [])].sort((a, b) => {
     if (a.type !== b.type) return a.type === "dir" ? -1 : 1;
+    if (!!a.pinned !== !!b.pinned) return a.pinned ? -1 : 1;
     return a.name.localeCompare(b.name);
   });
 }

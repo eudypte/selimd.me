@@ -122,7 +122,13 @@ genuine personal and business messages
       type: "dir",
       children: [
         {
-          name: "contrast.txt",
+          name: "music.txt",
+          type: "file",
+          dynamic: "spotify",
+          pinned: true,
+        },
+        {
+          name: "contrast-spicetify-theme.txt",
           type: "file",
           content: `CONTRAST  [GitHub](https://github.com/eudypte/spicetify-contrast-theme)
 ---------------------------------------
@@ -138,11 +144,6 @@ opens the first three sidebar playlists.
 
 Find Contrast in the Spicetify
 Marketplace Themes tab.`,
-        },
-        {
-          name: "music.txt",
-          type: "file",
-          dynamic: "spotify",
         },
       ],
     },

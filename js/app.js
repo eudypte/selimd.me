@@ -192,30 +192,75 @@ function formatSpotifyContent(tracks) {
   );
 }
 
+const SPOTIFY_REFRESH_MS = 60_000;
 let spotifyCache = null;
+let spotifyRequest = null;
+let spotifyPollTimer = null;
+let spotifyRenderedNode = null;
 
-function renderSpotifyView(node) {
-  rightTitleEl.textContent = node.name.toUpperCase();
-  if (spotifyCache) {
-    viewerEl.innerHTML = linkifyContent(formatSpotifyContent(spotifyCache));
-    return;
+function showSpotifyContent(raw) {
+  const activeLink = viewerEl.contains(document.activeElement) ? document.activeElement : null;
+  const activeHref = activeLink?.getAttribute("href");
+  const activeIndex = activeLink ? viewerLinks().indexOf(activeLink) : -1;
+  const scrollTop = viewerEl.scrollTop;
+  viewerEl.innerHTML = linkifyContent(raw);
+  viewerEl.scrollTop = scrollTop;
+  if (activeIndex >= 0) {
+    const links = viewerLinks();
+    (links.find((link) => link.getAttribute("href") === activeHref) || links[activeIndex])
+      ?.focus({ preventScroll: true });
   }
-  viewerEl.innerHTML = linkifyContent(
-    `RECENTLY PLAYED\n${"-".repeat(40)}\n\nLoading...`,
-  );
-  fetch("https://spotify-proxy.eudypte.workers.dev", { cache: "no-store" })
+}
+
+function refreshSpotify(node) {
+  if (spotifyRequest) return spotifyRequest;
+
+  spotifyRequest = fetch("https://spotify-proxy.eudypte.workers.dev", { cache: "no-store" })
     .then((res) => (res.ok ? res.json() : Promise.reject(res.status)))
     .then((data) => {
       spotifyCache = Array.isArray(data) ? data : data.tracks || [];
-      if (state.selected === node) {
-        viewerEl.innerHTML = linkifyContent(formatSpotifyContent(spotifyCache));
+      if (spotifyRenderedNode === node) {
+        showSpotifyContent(formatSpotifyContent(spotifyCache));
       }
     })
     .catch(() => {
-      if (state.selected === node) {
-        viewerEl.innerHTML = linkifyContent(SPOTIFY_PLACEHOLDER);
+      if (spotifyRenderedNode === node && spotifyCache === null) {
+        showSpotifyContent(SPOTIFY_PLACEHOLDER);
       }
+    })
+    .finally(() => {
+      spotifyRequest = null;
     });
+
+  return spotifyRequest;
+}
+
+function renderSpotifyView(node) {
+  spotifyRenderedNode = node;
+  rightTitleEl.textContent = node.name.toUpperCase();
+  if (spotifyCache !== null) {
+    showSpotifyContent(formatSpotifyContent(spotifyCache));
+  } else {
+    showSpotifyContent(`RECENTLY PLAYED\n${"-".repeat(40)}\n\nLoading...`);
+    refreshSpotify(node);
+  }
+}
+
+function syncSpotifyPolling(refresh = true) {
+  clearInterval(spotifyPollTimer);
+  spotifyPollTimer = null;
+
+  const node = state.selected?.dynamic === "spotify" ? state.selected : null;
+  if (!node) return;
+  if (refresh) refreshSpotify(node);
+  if (document.hidden) return;
+
+  spotifyPollTimer = setInterval(() => {
+    if (spotifyRenderedNode === node && spotifyCache !== null) {
+      showSpotifyContent(formatSpotifyContent(spotifyCache));
+    }
+    refreshSpotify(node);
+  }, SPOTIFY_REFRESH_MS);
 }
 
 function renderFileView(node) {
@@ -223,11 +268,13 @@ function renderFileView(node) {
     renderSpotifyView(node);
     return;
   }
+  spotifyRenderedNode = null;
   rightTitleEl.textContent = node.name.toUpperCase();
   viewerEl.innerHTML = linkifyContent(node.content);
 }
 
 function renderDirInfo(dirNode) {
+  spotifyRenderedNode = null;
   rightTitleEl.textContent = "Info";
   const fileCount = dirNode.children.filter((c) => c.type === "file").length;
   const dirCount = dirNode.children.filter((c) => c.type === "dir").length;
@@ -421,6 +468,7 @@ function applyHash() {
   pendingCursorName = null;
   setMode("list");
   render();
+  syncSpotifyPolling();
   afterRender();
 }
 
@@ -534,6 +582,10 @@ document.addEventListener("keydown", (e) => {
 });
 
 window.addEventListener("hashchange", applyHash);
+
+document.addEventListener("visibilitychange", () => {
+  syncSpotifyPolling(!document.hidden);
+});
 
 viewerEl.addEventListener("click", (e) => {
   const link = e.target.closest("a.viewer-link");

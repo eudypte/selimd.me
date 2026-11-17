@@ -122,6 +122,24 @@ genuine personal and business messages
       type: "dir",
       children: [
         {
+          name: "contrast.txt",
+          type: "file",
+          content: `CONTRAST  [GitHub](https://github.com/eudypte/spicetify-contrast-theme)
+---------------------------------------
+A high contrast light theme for Spotify
+built with Spicetify. White surfaces,
+black borders between panes, and no
+album-color glow.
+
+I added Vim-style shortcuts for moving
+around: j/k scroll, gg/G jump to the top
+or bottom, and gi opens search. Cmd+1-3
+opens the first three sidebar playlists.
+
+Find Contrast in the Spicetify
+Marketplace Themes tab.`,
+        },
+        {
           name: "music.txt",
           type: "file",
           dynamic: "spotify",

@@ -130,8 +130,14 @@ function escapeHtml(str) {
 // always relative to the filesystem root, not the current file's folder.
 // A path with a URL scheme, e.g. [github](https://github.com/eudypte), is
 // treated as external and opens in a new tab instead of being routed in-app.
+// ![alt](assets/x.jpg) embeds an image; a missing file shows [alt] instead.
+// The image is wrapped in a viewer-link so it joins j/k navigation and opens
+// the photo preview on click or Enter; data-name feeds the hover name bar.
 function linkifyContent(raw) {
-  return escapeHtml(raw).replace(/\[([^\]]+)\]\(([^)]+)\)/g, (match, label, path) => {
+  return escapeHtml(raw).replace(/(!?)\[([^\]]+)\]\(([^)]+)\)/g, (match, bang, label, path) => {
+    if (bang) {
+      return `<a href="${path}" class="viewer-link viewer-photo" data-name="${path.split("/").pop()}"><img src="${path}" alt="${label}" class="viewer-image" loading="lazy"></a>`;
+    }
     if (/^[a-z][a-z0-9+.-]*:/i.test(path)) {
       return `<a href="${path}" class="viewer-link" target="_blank" rel="noopener noreferrer">${label}</a><span class="external-link-mark" aria-hidden="true">↗</span>`;
     }
@@ -357,7 +363,7 @@ function openAt(index, { focusViewer = false } = {}) {
 }
 
 function onKeyDown(e) {
-  if (!settingsOverlayEl.hidden) return;
+  if (!settingsOverlayEl.hidden || photoPreviewEl.open) return;
 
   if (e.key === "1") {
     openSettings();
@@ -588,7 +594,39 @@ document.addEventListener("visibilitychange", () => {
   syncSpotifyPolling(!document.hidden);
 });
 
+// "error" does not bubble, so listen in the capture phase.
+viewerEl.addEventListener(
+  "error",
+  (e) => {
+    if (e.target.matches?.("img.viewer-image")) {
+      e.target.closest("a.viewer-photo").replaceWith(`[${e.target.alt}]`);
+    }
+  },
+  true,
+);
+
+// The preview is a modal <dialog>: the browser's top layer puts it above the
+// body.crt scanline overlay, and it handles Escape and returns focus itself.
+const photoPreviewEl = document.getElementById("photo-preview");
+const photoPreviewImgEl = photoPreviewEl.querySelector("img");
+
+photoPreviewEl.addEventListener("click", (e) => {
+  if (e.target !== photoPreviewImgEl) photoPreviewEl.close();
+});
+
 viewerEl.addEventListener("click", (e) => {
+  const photo = e.target.closest("a.viewer-photo");
+  if (photo) {
+    e.preventDefault();
+    // Focus returns to the photo on close, so make the keyboard agree with it.
+    setMode("viewer");
+    state.linkIndex = viewerLinks().indexOf(photo);
+    const img = photo.querySelector("img");
+    photoPreviewImgEl.src = img.src;
+    photoPreviewImgEl.alt = img.alt;
+    photoPreviewEl.showModal();
+    return;
+  }
   const link = e.target.closest("a.viewer-link");
   if (link && link.getAttribute("href").startsWith("#")) pendingReveal = true;
 });

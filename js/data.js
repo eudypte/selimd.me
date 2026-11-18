@@ -152,6 +152,25 @@ view with private details blacked out.`,
           pinned: true,
         },
         {
+          name: "minecraft.txt",
+          type: "file",
+          content: `MINECRAFT
+---------------------------------------
+Minecraft is my favorite game of all time
+and the best game ever made in my opinoin.
+
+Here are some builds i've made over the years.
+
+![placeholder photo 1](assets/minecraft/1.jpg)
+Cozy pond.
+
+![placeholder photo 2](assets/minecraft/2.jpg)
+Cave enterance, scary monsters down there...
+
+![placeholder photo 3](assets/minecraft/3.jpg)
+What could be in the chest?`,
+        },
+        {
           name: "contrast-spicetify-theme.txt",
           type: "file",
           content: `CONTRAST  [GitHub](https://github.com/eudypte/spicetify-contrast-theme)

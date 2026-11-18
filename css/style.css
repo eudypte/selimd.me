@@ -333,6 +333,94 @@ body.viewer-mode .file-list li.selected .size {
   background: var(--theme-selected-bg);
   color: var(--theme-selected-text);
 }
+/* inline-block keeps the image on its own text line, so the newlines
+   around an ![alt](src) token space it like the [alt] fallback text */
+.viewer-image {
+  display: inline-block;
+  vertical-align: bottom;
+  max-width: 100%;
+  height: auto;
+}
+/* Hover or keyboard focus selects a photo like a file row: a frame in the
+   selected color plus an inverse name bar. No motion, so nothing to reduce. */
+.viewer-photo {
+  display: inline-block;
+  position: relative;
+  vertical-align: bottom;
+  max-width: 100%;
+  text-decoration: none;
+  outline: 3px solid transparent;
+}
+.viewer-photo:focus {
+  outline: 3px solid transparent;
+  background: none;
+}
+.viewer-photo::after {
+  content: attr(data-name) / "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 0 0.5rem;
+  background: var(--theme-selected-bg);
+  color: var(--theme-selected-text);
+  text-shadow: none;
+  white-space: pre;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  visibility: hidden;
+}
+.viewer-photo:is(:hover, :focus-visible) {
+  outline-color: var(--theme-selected-bg);
+}
+.viewer-photo:is(:hover, :focus-visible)::after {
+  visibility: visible;
+}
+
+/* Modal <dialog> sits in the top layer, above the body.crt scanlines; it
+   fills the viewport so any click off the photo lands on it and closes. */
+html:has(.photo-preview[open]) {
+  overflow: hidden;
+}
+.photo-preview {
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  max-height: none;
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: transparent;
+  text-shadow: none;
+}
+.photo-preview[open] {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.photo-preview::backdrop {
+  background: rgba(0, 0, 0, 0.85);
+}
+.photo-preview img {
+  max-width: 90vw;
+  max-height: 90vh;
+  max-height: 90dvh;
+  width: auto;
+  height: auto;
+}
+.photo-preview-close {
+  position: fixed;
+  top: 0.5rem;
+  right: 0.5rem;
+  min-width: 44px;
+  min-height: 44px;
+  font: inherit;
+  font-size: 0.85rem;
+  border: none;
+  background: var(--theme-accent);
+  color: var(--theme-key-text);
+  cursor: pointer;
+}
 .external-link-mark {
   opacity: 0.7;
   font-size: 0.85em;

@@ -115,6 +115,30 @@ On held-out real texts it caught 84 of
 genuine personal and business messages
 (3.3%).`,
         },
+        {
+          name: "life-dashboard.txt",
+          type: "file",
+          content: `LIFE DASHBOARD  [Try it live](https://life.selimd.me)
+---------------------------------------
+Stack: Python, FastAPI, Jinja,
+Claude Code
+
+A personal dashboard for tracking food,
+weight, and reading. Logging by hand is
+tedious, so here it takes one chat
+message. I message an AI agent (Claude
+Code) from my phone or desktop with a
+photo of a nutrition label or the
+scale, a food name, or "on page 120",
+and it writes the entry.
+
+The dashboard shows daily calories and
+macros, a weight trend, reading
+progress, todos, and a media log.
+
+Visitors without a login see a public
+view with private details blacked out.`,
+        },
       ],
     },
     {

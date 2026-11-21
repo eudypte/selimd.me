@@ -7,22 +7,19 @@ const FS = {
       type: "file",
       content: `SELIM DUZER
 ---------------------------------------
-Aspiring software engineer.
+Hi, I'm Selim. I'm a CS student @ VT
+who likes building things, mostly the
+kind I end up using every day.
 
-This site is a small portfolio built to
-look like an old two-pane file manager
-(specifically norton commander).
-Browse the tree on the left, read the
-file on the right.
+[projects](projects) is where most of that lives.
+[site.txt](site.txt) explains how this place works.
 
-See [projects](projects) or get in
-[touch](contact.txt).
+I spend a lot of time tweaking my setup
+([dotfiles](dotfiles.txt)), there's usually music on
+([music](personal/music.txt)), and sometimes I'm in
+[minecraft](personal/minecraft.txt).
 
-Check out my [dotfiles](dotfiles.txt) for my development
-environment and agentic coding setup.
-
-See what I'm listening to at
-[music](personal/music.txt).`,
+Want to talk? [contact.txt](contact.txt).`,
     },
     {
       name: "projects",
@@ -191,7 +188,7 @@ Marketplace Themes tab.`,
       ],
     },
     {
-      name: "about.txt",
+      name: "site.txt",
       type: "file",
       content: `ABOUT
 ---------------------------------------
@@ -200,9 +197,8 @@ the computers I grew up curious about,
 so this one is a Norton Commander style
 file manager with a CRT filter. Browse
 with the arrow keys and Enter, vim keys
-(h j k l), or click. Every page is a
-text file, so there's nothing to load
-but words.`,
+(h j k l), or click. Have fun
+exploring.`,
     },
     {
       name: "contact.txt",

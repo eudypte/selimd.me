@@ -191,6 +191,20 @@ Marketplace Themes tab.`,
       ],
     },
     {
+      name: "about.txt",
+      type: "file",
+      content: `ABOUT
+---------------------------------------
+I wanted a portfolio that felt like
+the computers I grew up curious about,
+so this one is a Norton Commander style
+file manager with a CRT filter. Browse
+with the arrow keys and Enter, vim keys
+(h j k l), or click. Every page is a
+text file, so there's nothing to load
+but words.`,
+    },
+    {
       name: "contact.txt",
       type: "file",
       content: `CONTACT

@@ -100,10 +100,42 @@ assert.equal(run("musicYearStep({ tab: 'recent' }, weeks, -1)"), null);
 
 // Whole pages: tabs and year row, with the open tab and year marked current.
 const page = run("formatMusicPage({ tab: 'weekly', week: '2025-12-28' }, { weeks })");
-assert.match(page.text, /^\[recent\]\(personal\/music\.txt\)  \[weekly\]\(personal\/music\.txt\/weeks\)\n-{40}\nYEARS  \[2026\]\([^)]+\)  \[2025\]\([^)]+\)\n\n/);
+assert.match(page.text, /^\[recent\]\(personal\/music\.txt\)  \[weekly\]\(personal\/music\.txt\/weeks\)  \[check out my spotify\]\(https:\/\/open\.spotify\.com\/user\/goodgametr\)\n-{40}\nYEARS  \[2026\]\([^)]+\)  \[2025\]\([^)]+\)\n\n/);
 assert.deepEqual([...page.active], ["personal/music.txt/weeks", "personal/music.txt/weeks/2025"]);
-assert.equal(page.head, 4, "recent, weekly, 2026, 2025 come before the body");
-assert.equal(run("formatMusicPage({ tab: 'recent' }, { tracks: [] }).head"), 2);
+assert.equal(page.head, 5, "recent, weekly, spotify, 2026, 2025 come before the body");
+assert.equal(run("formatMusicPage({ tab: 'recent' }, { tracks: [] }).head"), 3);
+// spotify is external, so it is never the current tab.
+assert.deepEqual([...run("formatMusicPage({ tab: 'recent' }, { tracks: [] }).active")], ["personal/music.txt"]);
+
+// Mood box: 3 lines of exactly 40 columns, between the tab rule and the
+// plain RECENTLY PLAYED heading, recent tab only.
+const mood = (expr) => run(`formatMoodBox(${expr})`);
+const box = mood("{ of: 20, tags: [{ name: 'mellow', count: 14 }, { name: 'jazz', count: 11 }, { name: 'late night', count: 6 }] }");
+assert.equal(box, [
+  "╔════════════ CURRENT MOOD ════════════╗",
+  "║ mellow · jazz · late night           ║",
+  "╚══════════════════════════════════════╝",
+  "", "",
+].join("\n"));
+assert.equal(mood("null").split("\n")[1], "║ ...                                  ║", "loading");
+assert.equal(mood("false"), "", "failed: no box");
+assert.equal(mood("{ of: 20, tags: [] }"), "", "no tags: no box");
+assert.equal(mood("{ tags: 'odd' }"), "", "odd shape: no box");
+// Tags that do not fit drop from the end; one huge tag is cut; brackets and
+// odd entries cannot form links or break the box.
+const messy = mood("{ tags: [{ name: 'Experimental Electronic' }, { name: 'post-rock [live]' }, null, { name: 'x'.repeat(50) }] }");
+assert.equal(messy.split("\n")[1], "║ experimental electronic              ║");
+assert.equal(mood("{ tags: [{ name: 'a'.repeat(50) }] }").split("\n")[1], `║ ${"a".repeat(33)}... ║`);
+assert.equal(mood("{ tags: [{ name: 'Indie' }, { name: 'post-rock [live]' }] }").split("\n")[1], "║ indie · post-rock (live)             ║");
+for (const b of [box, messy, mood("null")]) {
+  for (const line of b.trimEnd().split("\n")) assert.equal(line.length, 40, line);
+}
+const recentPage = run("formatMusicPage({ tab: 'recent' }, { tracks: [], mood: { tags: [{ name: 'ambient' }] } }).text");
+assert.match(recentPage, /\n-{40}\n╔═+ CURRENT MOOD ═+╗\n║ ambient +║\n╚═+╝\n\nRECENTLY PLAYED\n\nNo listening history/);
+assert.doesNotMatch(run("formatMusicPage({ tab: 'weekly' }, { weeks, mood: { tags: [{ name: 'ambient' }] } }).text"), /CURRENT MOOD/);
+// While the mood loads, the page holds its place with "..." in the box.
+assert.match(run("formatMusicPage({ tab: 'recent' }, { tracks: [], mood: null }).text"), /║ \.\.\. +║/);
+assert.doesNotMatch(run("formatMusicPage({ tab: 'recent' }, { tracks: [], mood: false }).text"), /CURRENT MOOD/);
 assert.equal(run("formatMusicPage({ tab: 'weekly' }, { weeks: null }).text").endsWith("Loading..."), true);
 assert.match(run("formatMusicPage({ tab: 'weekly' }, { weeks: [] }).text"), /No weeks yet/);
 

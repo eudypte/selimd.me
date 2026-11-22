@@ -30,6 +30,15 @@ globalThis.fetch = async (url) => {
       { name: "Now", artist: { "#text": "A" }, album: { "#text": "L" }, url: "https://www.last.fm/x", "@attr": { nowplaying: "true" } },
       { name: "Then", artist: { "#text": "B" }, album: { "#text": "M" }, url: "https://www.last.fm/y", date: { uts: "1700000000" } },
     ] } };
+  } else if (method === "artist.getTopTags") {
+    const tags = {
+      // Messy on purpose: case, a decade, the other artist's name, the
+      // stoplist, a weak tag, and a sixth tag past the top 5.
+      A: [["Rock", 100], ["seen live", 90], ["2000s", 80], ["B", 70], ["Mellow ", 60], ["jazz", 5], ["late night", 50]],
+      B: [["rock", 100], ["Jazz", 50], ["90s", 40], ["1999", 30]],
+    }[u.searchParams.get("artist")];
+    if (!tags) return new Response("", { status: 500 });
+    body = { toptags: { tag: tags.map(([name, count]) => ({ name, count })) } };
   } else if (method === "user.getInfo") {
     body = { user: { name: "someone", registered: { unixtime: String(registered), "#text": registered } } };
   } else if (method === "user.getWeeklyChartList") {
@@ -77,6 +86,25 @@ assert.equal(calls.filter((c) => c === "user.getRecentTracks").length, 1, "secon
 Date.now = () => now + 61_000;
 await get("/");
 assert.equal(calls.filter((c) => c === "user.getRecentTracks").length, 2, "refetched after 60s");
+Date.now = () => now;
+
+// Mood: artist tags of the recent plays, filtered, one point per play.
+calls.length = 0;
+res = await get("/lastfm/mood");
+assert.equal(res.status, 200);
+assert.deepEqual(await res.json(), {
+  of: 2,
+  tags: [{ name: "rock", count: 2 }, { name: "mellow", count: 1 }, { name: "jazz", count: 1 }],
+});
+assert.deepEqual(calls.filter((c) => c === "artist.getTopTags").length, 2);
+calls.length = 0;
+await get("/lastfm/mood");
+Date.now = () => now + 29 * 60_000;
+await get("/lastfm/mood");
+assert.equal(calls.length, 0, "mood cached for 30 minutes");
+Date.now = () => now + 31 * 60_000;
+await get("/lastfm/mood");
+assert.deepEqual(calls, ["user.getRecentTracks"], "artist tags cached for a day");
 Date.now = () => now;
 
 // Before any cron run the week list is empty and no week is known.
@@ -133,7 +161,7 @@ assert.equal(puts, 2);
 // Method checks and Last.fm errors.
 assert.equal((await worker.fetch(new Request("https://w.example/", { method: "POST" }), env)).status, 405);
 assert.equal((await worker.fetch(new Request("https://w.example/", { method: "OPTIONS" }), env)).status, 200);
-Date.now = () => now + 200_000;
+Date.now = () => now + 40 * 60_000; // past every cache above
 env.LASTFM_USER = "fails";
 globalThis.fetch = async () => new Response(JSON.stringify({ error: 6, message: "User not found" }));
 assert.equal((await get("/")).status, 502);

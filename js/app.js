@@ -98,7 +98,7 @@ function sizeLabel(node) {
   if (node.type === "up") return "UP--DIR";
   if (node.type === "dir") return "SUB-DIR";
   if (node.dynamic) return "LIVE";
-  return `${node.content.length}`;
+  return typeof node.content === "string" ? `${node.content.length}` : "?";
 }
 
 function renderList() {
@@ -176,7 +176,7 @@ function leaveViewerMode() {
 const MUSIC_API = "https://spotify-proxy.eudypte.workers.dev";
 const MUSIC_REFRESH_MS = 60_000;
 // null = not loaded yet. Weeks load once per session; recent tracks poll.
-const music = { tracks: null, weeks: null };
+const music = { tracks: null, weeks: null, mood: null };
 const musicRequests = {};
 let musicPollTimer = null;
 let musicRenderedNode = null;
@@ -200,22 +200,36 @@ function musicFetch(path, done) {
     });
 }
 
+// A failed or malformed answer keeps tracks already shown; with none yet, it
+// stores false ("couldn't load").
 function loadRecent() {
   musicFetch("/", (data) => {
     if (Array.isArray(data)) music.tracks = data;
-    else if (music.tracks === null) music.tracks = [];
+    else if (music.tracks === null) music.tracks = false;
+  });
+  // The worker caches the mood for 30 minutes, so the 60s poll costs little.
+  musicFetch("/lastfm/mood", (data) => {
+    if (Array.isArray(data?.tags)) music.mood = data;
+    else if (music.mood === null) music.mood = false;
   });
 }
 
 function drawMusic() {
   const view = musicView();
-  if (view.tab === "recent" && music.tracks === null) loadRecent();
+  if (view.tab === "recent" && (music.tracks === null || music.mood === null)) loadRecent();
   if (view.tab === "weekly" && music.weeks === null) {
     musicFetch("/lastfm/weeks", (data) => {
-      music.weeks = musicPlayedWeeks(data);
+      music.weeks = Array.isArray(data) ? musicPlayedWeeks(data) : false;
     });
   }
-  showMusic(formatMusicPage(view, music));
+  let page;
+  try {
+    page = formatMusicPage(view, music);
+  } catch {
+    viewerEl.textContent = FILE_ERROR;
+    return;
+  }
+  showMusic(page);
 }
 
 // A redraw of the same page (fresh data) keeps the focused link and scroll;
@@ -227,7 +241,11 @@ function showMusic({ text, active, head }) {
   const activeHref = activeLink?.getAttribute("href");
   const activeIndex = activeLink ? viewerLinks().indexOf(activeLink) : -1;
   const scrollTop = viewerEl.scrollTop;
-  viewerEl.innerHTML = linkifyContent(text);
+  // The mood box's three lines get their own line height so its borders join.
+  viewerEl.innerHTML = linkifyContent(text).replace(
+    /╔[^\n]*\n║[^\n]*\n╚[^\n]*/,
+    (box) => `<span class="viewer-box">${box}</span>`,
+  );
   for (const path of active) {
     viewerEl.querySelector(`a[href="#/${path}"]`)?.setAttribute("aria-current", "page");
   }
@@ -250,6 +268,10 @@ function syncMusicPolling(refresh = true) {
   musicPollTimer = setInterval(loadRecent, MUSIC_REFRESH_MS);
 }
 
+// Shown instead of a blank pane when a file cannot be shown, e.g. a cached
+// data.js from another deploy names a file type this app.js does not know.
+const FILE_ERROR = "Couldn't load this file. Try reloading the page.";
+
 function renderFileView(node) {
   rightTitleEl.textContent = node.name.toUpperCase();
   if (node.dynamic === "music") {
@@ -259,6 +281,10 @@ function renderFileView(node) {
   }
   musicRenderedNode = null;
   musicRenderedHash = null;
+  if (node.dynamic || typeof node.content !== "string") {
+    viewerEl.textContent = FILE_ERROR;
+    return;
+  }
   viewerEl.innerHTML = linkifyContent(node.content);
 }
 

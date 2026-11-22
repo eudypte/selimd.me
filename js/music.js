@@ -73,8 +73,17 @@ function wrap(str, indent, width = MUSIC_WIDTH) {
 // The worker lists every Last.fm week since the user registered, including
 // weeks with no plays and ones its cron has not fetched yet; only weeks with
 // albums are shown, so years, pages and prev/next skip the rest.
+// Anything malformed (no dates, albums that are not a list) is dropped too.
 function musicPlayedWeeks(weeks) {
-  return Array.isArray(weeks) ? weeks.filter((w) => w.albums?.length > 0) : [];
+  if (!Array.isArray(weeks)) return [];
+  return weeks.filter(
+    (w) =>
+      Number.isFinite(w?.from) &&
+      Number.isFinite(w?.to) &&
+      Array.isArray(w.albums) &&
+      w.albums.length > 0 &&
+      w.albums.every((a) => a && typeof a === "object"),
+  );
 }
 
 function musicYears(weeks) {
@@ -99,9 +108,13 @@ function musicYearStep(view, weeks, dir) {
   return next === undefined ? null : `${MUSIC_WEEKS_PATH}/${next}`;
 }
 
+// The tab row, on both tabs: "recent  weekly  check out my spotify↗" is 37
+// columns.
 function formatTabs(tab) {
   return {
-    text: `[recent](${MUSIC_PATH})  [weekly](${MUSIC_WEEKS_PATH})\n${MUSIC_RULE}\n`,
+    text:
+      `[recent](${MUSIC_PATH})  [weekly](${MUSIC_WEEKS_PATH})  ` +
+      `[check out my spotify](${SPOTIFY_PROFILE_URL})\n${MUSIC_RULE}\n`,
     active: [tab === "recent" ? MUSIC_PATH : MUSIC_WEEKS_PATH],
   };
 }
@@ -120,12 +133,49 @@ function formatYearRow(years, current) {
   };
 }
 
+// The recent tab's mood, a 40-column Norton Commander style panel:
+//   ╔════════════ CURRENT MOOD ════════════╗
+//   ║ mellow · jazz · late night           ║
+//   ╚══════════════════════════════════════╝
+// mood: null while loading ("..." in the box); false, undefined or no tags
+// = no box.
+// Tags that do not fit drop from the end.
+function formatMoodBox(mood) {
+  const inner = MUSIC_WIDTH - 2;
+  const room = inner - 2;
+  let line;
+  if (mood === null) {
+    line = "...";
+  } else {
+    const names = (Array.isArray(mood?.tags) ? mood.tags : [])
+      .map((t) => plain(t?.name).toLowerCase())
+      .filter(Boolean);
+    if (names.length === 0) return "";
+    line = names[0].length > room ? names[0].slice(0, room - 3) + "..." : names[0];
+    for (const name of names.slice(1)) {
+      if (line.length + 3 + name.length > room) break;
+      line += ` · ${name}`;
+    }
+  }
+  const label = " CURRENT MOOD ";
+  const left = Math.floor((inner - label.length) / 2);
+  return (
+    `╔${"═".repeat(left)}${label}${"═".repeat(inner - left - label.length)}╗\n` +
+    `║ ${line.padEnd(room)} ║\n` +
+    `╚${"═".repeat(inner)}╝\n\n`
+  );
+}
+
+const MUSIC_LOAD_ERROR = "Couldn't load this. Try reloading the\npage in a minute.";
+
 function formatRecent(tracks) {
   if (tracks === null) return "Loading...";
-  if (!Array.isArray(tracks) || tracks.length === 0) {
+  if (!Array.isArray(tracks)) return MUSIC_LOAD_ERROR;
+  if (tracks.length === 0) {
     return "No listening history yet. Check back\nonce something has been scrobbled.";
   }
   return tracks
+    .filter((t) => t && typeof t === "object")
     .map((t) => {
       const artists = Array.isArray(t.artists) ? t.artists.join(", ") : t.artist || "";
       const when = t.nowPlaying ? "now playing" : t.playedAt ? relativeTime(t.playedAt) : "";
@@ -171,7 +221,8 @@ function formatWeek(weeks, id) {
   );
 }
 
-// data: { tracks, weeks } where null means not loaded yet; weeks are the
+// data: { tracks, weeks, mood } where null means not loaded yet and false means
+// the worker failed or answered with something unexpected; weeks are the
 // played ones only (musicPlayedWeeks).
 // Returns the page text, the paths of the links to mark as current, and
 // `head`, how many links the tab and year rows take before the page body.
@@ -185,11 +236,12 @@ function formatMusicPage(view, data) {
   if (view.tab === "recent") {
     return page(
       tabs.text,
-      `RECENTLY PLAYED  [check out my spotify](${SPOTIFY_PROFILE_URL})\n\n` + formatRecent(data.tracks),
+      formatMoodBox(data.mood) + `RECENTLY PLAYED\n\n` + formatRecent(data.tracks),
       tabs.active,
     );
   }
   if (data.weeks === null) return page(tabs.text, "Loading...", tabs.active);
+  if (!Array.isArray(data.weeks)) return page(tabs.text, MUSIC_LOAD_ERROR, tabs.active);
   if (data.weeks.length === 0) {
     return page(tabs.text, "No weeks yet. Check back after the\nfirst sync.", tabs.active);
   }

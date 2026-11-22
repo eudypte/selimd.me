@@ -328,6 +328,13 @@ body.viewer-mode .file-list li.selected .size {
   color: inherit;
   text-decoration: underline;
 }
+/* music.txt's CURRENT MOOD panel: lines touch so the box-drawing borders
+   join, also where phones space lines out */
+.viewer-box {
+  display: inline-block;
+  line-height: 1;
+  vertical-align: top;
+}
 /* the open tab or year on music.txt, in the pane-title colors */
 .viewer-link[aria-current="page"] {
   background: var(--theme-chrome);

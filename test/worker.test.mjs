@@ -12,6 +12,8 @@ const charts = [0, 1, 2, 3, 4].map((i) => ({
   to: String(start + (i + 1) * 7 * DAY),
 }));
 const now = (start + 4 * 7 * DAY + DAY) * 1000; // a day into the running week
+// Registered during the second week, so the first week is pre-history.
+const registered = start + 10 * DAY;
 
 const calls = [];
 let failFrom = null;
@@ -28,6 +30,8 @@ globalThis.fetch = async (url) => {
       { name: "Now", artist: { "#text": "A" }, album: { "#text": "L" }, url: "https://www.last.fm/x", "@attr": { nowplaying: "true" } },
       { name: "Then", artist: { "#text": "B" }, album: { "#text": "M" }, url: "https://www.last.fm/y", date: { uts: "1700000000" } },
     ] } };
+  } else if (method === "user.getInfo") {
+    body = { user: { name: "someone", registered: { unixtime: String(registered), "#text": registered } } };
   } else if (method === "user.getWeeklyChartList") {
     body = { weeklychartlist: { chart: charts } };
   } else if (method === "user.getWeeklyAlbumChart") {
@@ -79,17 +83,22 @@ Date.now = () => now;
 assert.equal(await (await get("/lastfm/weeks")).text(), "[]");
 assert.equal((await get("/lastfm/week/2025-12-14")).status, 404);
 
-// Cron: finished weeks only, newest first, top 5; a failure keeps progress.
-failFrom = charts[1].from; // the second-oldest week fails
+// A pre-history week stored by an older version (before the registration
+// filter) is dropped, not kept or refetched.
+store.set("lastfm-weeks", JSON.stringify([{ from: Number(charts[0].from), to: Number(charts[0].to) }]));
+
+// Cron: finished weeks since registration, newest first, top 5; a failure
+// keeps the progress made so far.
+failFrom = charts[2].from;
 calls.length = 0;
 await worker.scheduled({}, env);
 let weeks = JSON.parse(store.get("lastfm-weeks"));
-assert.deepEqual(weeks.map((w) => w.from), [3, 2, 1, 0].map((i) => Number(charts[i].from)));
+assert.deepEqual(weeks.map((w) => w.from), [3, 2, 1].map((i) => Number(charts[i].from)));
 assert.equal(weeks[0].albums.length, 5);
 assert.deepEqual(weeks[0].albums[0], { name: `Album 1 of ${charts[3].from}`, artist: "Artist 1", plays: 20 });
-assert.ok(weeks[1].albums);
-assert.equal(weeks[2].albums, undefined, "failed week is left to the next run");
-assert.equal(weeks[3].albums, undefined, "the run stops at the first failure");
+assert.equal(weeks[1].albums, undefined, "failed week is left to the next run");
+assert.equal(weeks[2].albums, undefined, "the run stops at the first failure");
+assert.equal(calls.filter((c) => c === "user.getWeeklyAlbumChart").length, 2, "pre-history is never fetched");
 assert.equal(puts, 1);
 
 // /lastfm/weeks serves the stored value as is.
@@ -102,13 +111,13 @@ res = await get("/lastfm/week/2026-01-04");
 assert.equal((await res.json()).albums.length, 5);
 assert.equal(calls.length, 0);
 failFrom = null;
-res = await get("/lastfm/week/2025-12-14");
+res = await get("/lastfm/week/2025-12-21");
 assert.equal(res.status, 200);
-assert.equal((await res.json()).albums[0].name, `Album 1 of ${charts[0].from}`);
-await get("/lastfm/week/2025-12-14");
+assert.equal((await res.json()).albums[0].name, `Album 1 of ${charts[1].from}`);
+await get("/lastfm/week/2025-12-21");
 assert.deepEqual(calls, ["user.getWeeklyAlbumChart"], "live week fetched once");
 calls.length = 0;
-for (const path of ["/lastfm/week/2026-01-11", "/lastfm/week/2025-12-15", "/lastfm/week/x", "/nope"]) {
+for (const path of ["/lastfm/week/2025-12-14", "/lastfm/week/2026-01-11", "/lastfm/week/2025-12-15", "/lastfm/week/x", "/nope"]) {
   assert.equal((await get(path)).status, 404, path);
 }
 assert.equal(calls.length, 0, "unknown weeks never reach Last.fm");

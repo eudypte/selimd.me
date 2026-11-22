@@ -4,7 +4,8 @@
 //
 //   GET /                      recent scrobbles, newest first, the track
 //                              playing now marked nowPlaying
-//   GET /lastfm/weeks          every finished Last.fm week, newest first:
+//   GET /lastfm/weeks          every finished Last.fm week since the user
+//                              registered, newest first:
 //                              [{from, to, albums?: [{name, artist, plays}]}]
 //                              (from/to in Unix seconds; albums = top 5, absent
 //                              until the cron has fetched that week)
@@ -91,13 +92,17 @@ async function weekChart(env, date) {
 
 async function syncWeeks(env, now = Date.now()) {
   const list = await lastfm(env, "user.getWeeklyChartList");
+  // The chart list starts in 2005 for everyone; weeks that ended before the
+  // user registered have no plays, so they are never stored or fetched.
+  const info = await lastfm(env, "user.getInfo");
+  const registered = Number(info.user?.registered?.unixtime ?? 0);
   const stored = JSON.parse((await env.SPOTIFY_HISTORY.get(WEEKS_KEY)) ?? "[]");
   const known = new Map(stored.filter((w) => w.albums).map((w) => [w.from, w]));
 
   // The chart list runs oldest first; keep finished weeks, newest first.
   const weeks = [].concat(list.weeklychartlist?.chart ?? [])
     .map((c) => ({ from: Number(c.from), to: Number(c.to) }))
-    .filter((w) => w.to * 1000 <= now)
+    .filter((w) => w.to * 1000 <= now && w.to > registered)
     .reverse()
     .map((w) => known.get(w.from) ?? w);
 

@@ -176,7 +176,7 @@ function leaveViewerMode() {
 const MUSIC_API = "https://spotify-proxy.eudypte.workers.dev";
 const MUSIC_REFRESH_MS = 60_000;
 // null = not loaded yet. Weeks load once per session; recent tracks poll.
-const music = { tracks: null, weeks: null, weekAlbums: {} };
+const music = { tracks: null, weeks: null };
 const musicRequests = {};
 let musicPollTimer = null;
 let musicRenderedNode = null;
@@ -212,15 +212,8 @@ function drawMusic() {
   if (view.tab === "recent" && music.tracks === null) loadRecent();
   if (view.tab === "weekly" && music.weeks === null) {
     musicFetch("/lastfm/weeks", (data) => {
-      music.weeks = Array.isArray(data) ? data : [];
+      music.weeks = musicPlayedWeeks(data);
     });
-  }
-  if (view.week && music.weeks?.some((w) => weekId(w) === view.week)) {
-    if (musicWeekAlbums(music, view.week) === null) {
-      musicFetch(`/lastfm/week/${view.week}`, (data) => {
-        music.weekAlbums[view.week] = Array.isArray(data?.albums) ? data.albums : false;
-      });
-    }
   }
   showMusic(formatMusicPage(view, music));
 }

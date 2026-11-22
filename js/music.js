@@ -42,9 +42,10 @@ function weekLabel(week) {
   return `${shortDate(week.from)} - ${shortDate(week.to)}`;
 }
 
-// Names come from scrobbles, so keep them from forming [label](path) links.
+// Names come from scrobbles, so keep them from forming [label](path) links,
+// and fold any run of whitespace to one space for wrap().
 function plain(str) {
-  return String(str ?? "").replace(/\[/g, "(").replace(/\]/g, ")");
+  return String(str ?? "").replace(/\[/g, "(").replace(/\]/g, ")").replace(/\s+/g, " ").trim();
 }
 
 // Last.fm URLs can hold parentheses, which would end a (path) early.
@@ -53,8 +54,27 @@ function safeUrl(url) {
   return url.replace(/[()"\s]/g, (c) => "%" + c.charCodeAt(0).toString(16).toUpperCase().padStart(2, "0"));
 }
 
-function truncate(str, width) {
-  return str.length > width ? str.slice(0, width - 3) + "..." : str;
+// Word-wrap to `width` columns after an `indent` already on the first line,
+// indenting the lines that follow by the same amount (a hanging indent).
+// Words are split on plain spaces only, so a no-break space keeps two words
+// together; a word longer than a line is split.
+function wrap(str, indent, width = MUSIC_WIDTH) {
+  const room = width - indent;
+  const words = str.split(" ").filter(Boolean).flatMap((w) => w.match(new RegExp(`.{1,${room}}`, "g")));
+  const lines = [];
+  for (const word of words) {
+    const last = lines.length - 1;
+    if (last >= 0 && lines[last].length + 1 + word.length <= room) lines[last] += " " + word;
+    else lines.push(word);
+  }
+  return lines.join("\n" + " ".repeat(indent));
+}
+
+// The worker lists every Last.fm week since the user registered, including
+// weeks with no plays and ones its cron has not fetched yet; only weeks with
+// albums are shown, so years, pages and prev/next skip the rest.
+function musicPlayedWeeks(weeks) {
+  return Array.isArray(weeks) ? weeks.filter((w) => w.albums?.length > 0) : [];
 }
 
 function musicYears(weeks) {
@@ -120,34 +140,26 @@ function formatYear(weeks, year) {
   const lines = weeks
     .filter((w) => weekYear(w) === year)
     .map((w) => {
-      const top = w.albums ? (w.albums[0] ? plain(w.albums[0].name) : "(no plays)") : "...";
-      const width = MUSIC_WIDTH - weekLabel(w).length - 2;
-      return `[${weekLabel(w)}](${MUSIC_WEEKS_PATH}/${weekId(w)})  ${truncate(top, width)}`;
+      // The dash stays on the album's line, so no line starts with "- ".
+      const top = `${plain(w.albums[0].name)}\u00a0- ${plain(w.albums[0].artist)}`;
+      const label = weekLabel(w);
+      return `[${label}](${MUSIC_WEEKS_PATH}/${weekId(w)})  ${wrap(top, label.length + 2)}`;
     });
-  return lines.length ? lines.join("\n") : `No weeks in ${year}.`;
+  return lines.length ? lines.join("\n\n") : `No weeks in ${year}.`;
 }
 
-function formatWeek(weeks, id, albums) {
+function formatWeek(weeks, id) {
   const i = weeks.findIndex((w) => weekId(w) === id);
   if (i < 0) return "No such week.";
   const week = weeks[i];
   const year = weekYear(week);
-  let body;
-  if (albums === null) {
-    body = "Loading...";
-  } else if (!Array.isArray(albums)) {
-    body = "Could not load this week.";
-  } else if (albums.length === 0) {
-    body = "No plays this week.";
-  } else {
-    body = albums
-      .slice(0, 5)
-      .map((a, n) => {
-        const plays = `${a.plays} play${Number(a.plays) === 1 ? "" : "s"}`;
-        return `${n + 1}. ${plain(a.name)}\n   ${plain(a.artist)} · ${plays}`;
-      })
-      .join("\n\n");
-  }
+  const body = week.albums
+    .slice(0, 5)
+    .map((a, n) => {
+      const plays = `${a.plays} play${Number(a.plays) === 1 ? "" : "s"}`;
+      return `${n + 1}. ${wrap(plain(a.name), 3)}\n   ${wrap(`${plain(a.artist)} · ${plays}`, 3)}`;
+    })
+    .join("\n\n");
   // Newest first, so the older week is the next entry.
   const older = weeks[i + 1];
   const newer = weeks[i - 1];
@@ -159,7 +171,8 @@ function formatWeek(weeks, id, albums) {
   );
 }
 
-// data: { tracks, weeks, weekAlbums } where null means not loaded yet.
+// data: { tracks, weeks } where null means not loaded yet; weeks are the
+// played ones only (musicPlayedWeeks).
 // Returns the page text, the paths of the links to mark as current, and
 // `head`, how many links the tab and year rows take before the page body.
 function formatMusicPage(view, data) {
@@ -183,16 +196,9 @@ function formatMusicPage(view, data) {
   const year = musicViewYear(view, data.weeks);
   const row = formatYearRow(musicYears(data.weeks), year);
   const body = view.week
-    ? formatWeek(data.weeks, view.week, musicWeekAlbums(data, view.week))
+    ? formatWeek(data.weeks, view.week)
     : formatYear(data.weeks, year);
   return page(tabs.text + row.text, body, [...tabs.active, ...row.active]);
-}
-
-// A week's albums come with the week list once the worker's cron has filled
-// them in; until then they are fetched one week at a time.
-function musicWeekAlbums(data, id) {
-  const week = data.weeks.find((w) => weekId(w) === id);
-  return week?.albums ?? data.weekAlbums[id] ?? null;
 }
 
 function relativeTime(iso) {

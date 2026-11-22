@@ -336,10 +336,19 @@ body.viewer-mode .file-list li.selected .size {
   vertical-align: top;
 }
 /* the open tab or year on music.txt, in the pane-title colors */
-.viewer-link[aria-current="page"] {
+/* It looks the same however it was reached (load, click, a second click,
+   hover, focus), so hover and focus must not repaint it. */
+.viewer-link[aria-current="page"],
+.viewer-link[aria-current="page"]:is(:hover, :focus) {
   background: var(--theme-chrome);
   color: var(--theme-background);
   text-decoration: none;
+  cursor: default;
+}
+/* keyboard focus on it: a ring in the selection color around the grey tab */
+.viewer-link[aria-current="page"]:focus-visible {
+  outline: 2px solid var(--theme-selected-bg);
+  outline-offset: 2px;
 }
 .viewer-link:focus {
   outline: none;

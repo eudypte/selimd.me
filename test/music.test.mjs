@@ -108,7 +108,7 @@ assert.equal(run("formatMusicPage({ tab: 'recent' }, { tracks: [] }).head"), 3);
 assert.deepEqual([...run("formatMusicPage({ tab: 'recent' }, { tracks: [] }).active")], ["personal/music.txt"]);
 
 // Mood box: 3 lines of exactly 40 columns, between the tab rule and the
-// plain RECENTLY PLAYED heading, recent tab only.
+// recent tracks, recent tab only.
 const mood = (expr) => run(`formatMoodBox(${expr})`);
 const box = mood("{ of: 20, tags: [{ name: 'mellow', count: 14 }, { name: 'jazz', count: 11 }, { name: 'late night', count: 6 }] }");
 assert.equal(box, [
@@ -131,7 +131,10 @@ for (const b of [box, messy, mood("null")]) {
   for (const line of b.trimEnd().split("\n")) assert.equal(line.length, 40, line);
 }
 const recentPage = run("formatMusicPage({ tab: 'recent' }, { tracks: [], mood: { tags: [{ name: 'ambient' }] } }).text");
-assert.match(recentPage, /\n-{40}\n╔═+ CURRENT MOOD ═+╗\n║ ambient +║\n╚═+╝\n\nRECENTLY PLAYED\n\nNo listening history/);
+assert.match(recentPage, /\n-{40}\n╔═+ CURRENT MOOD ═+╗\n║ ambient +║\n╚═+╝\n\nNo listening history/);
+assert.doesNotMatch(recentPage, /RECENTLY PLAYED/);
+// Without a mood box, a blank line still separates the tab rule from the tracks.
+assert.match(run("formatMusicPage({ tab: 'recent' }, { tracks: [], mood: false }).text"), /\n-{40}\n\nNo listening history/);
 assert.doesNotMatch(run("formatMusicPage({ tab: 'weekly' }, { weeks, mood: { tags: [{ name: 'ambient' }] } }).text"), /CURRENT MOOD/);
 // While the mood loads, the page holds its place with "..." in the box.
 assert.match(run("formatMusicPage({ tab: 'recent' }, { tracks: [], mood: null }).text"), /║ \.\.\. +║/);

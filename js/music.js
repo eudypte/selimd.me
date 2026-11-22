@@ -236,7 +236,7 @@ function formatMusicPage(view, data) {
   if (view.tab === "recent") {
     return page(
       tabs.text,
-      formatMoodBox(data.mood) + `RECENTLY PLAYED\n\n` + formatRecent(data.tracks),
+      (formatMoodBox(data.mood) || "\n") + formatRecent(data.tracks),
       tabs.active,
     );
   }

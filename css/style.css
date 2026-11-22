@@ -328,6 +328,12 @@ body.viewer-mode .file-list li.selected .size {
   color: inherit;
   text-decoration: underline;
 }
+/* the open tab or year on music.txt, in the pane-title colors */
+.viewer-link[aria-current="page"] {
+  background: var(--theme-chrome);
+  color: var(--theme-background);
+  text-decoration: none;
+}
 .viewer-link:focus {
   outline: none;
   background: var(--theme-selected-bg);

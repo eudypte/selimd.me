@@ -12,6 +12,7 @@ const state = {
   dirPath: [],
   parentNode: null,
   selected: null,
+  tail: [],
   listing: [],
   cursor: 0,
   mode: "list", // "list" | "viewer"
@@ -53,8 +54,10 @@ function resolveFromHash() {
   let node = FS;
   const dirPath = [];
   let selected = null;
+  let tail = [];
 
-  for (const seg of segments) {
+  // Anything after a file is that file's own page address (music.txt tabs).
+  for (const [i, seg] of segments.entries()) {
     const child = (node.children || []).find((c) => c.name === seg);
     if (!child) break;
     if (child.type === "dir") {
@@ -62,6 +65,7 @@ function resolveFromHash() {
       dirPath.push(seg);
     } else {
       selected = child;
+      tail = segments.slice(i + 1);
       break;
     }
   }
@@ -76,6 +80,7 @@ function resolveFromHash() {
   state.dirPath = dirPath;
   state.parentNode = dirPath.length > 0 ? getNodeAtPath(dirPath.slice(0, -1)) : null;
   state.selected = selected;
+  state.tail = tail;
   state.listing = listing;
   state.cursor = selected
     ? Math.max(
@@ -123,7 +128,11 @@ function renderList() {
 }
 
 function escapeHtml(str) {
-  return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  return str
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
 }
 
 // Content supports [label](path) links, e.g. [projects](projects) — path is
@@ -164,54 +173,73 @@ function leaveViewerMode() {
   setMode("list");
 }
 
-function relativeTime(iso) {
-  const then = new Date(iso).getTime();
-  if (Number.isNaN(then)) return "";
-  const diffSec = Math.max(0, Math.round((Date.now() - then) / 1000));
-  if (diffSec < 60) return "just now";
-  const diffMin = Math.round(diffSec / 60);
-  if (diffMin < 60) return `${diffMin}m ago`;
-  const diffHr = Math.round(diffMin / 60);
-  if (diffHr < 24) return `${diffHr}h ago`;
-  const diffDay = Math.round(diffHr / 24);
-  return `${diffDay}d ago`;
+const MUSIC_API = "https://spotify-proxy.eudypte.workers.dev";
+const MUSIC_REFRESH_MS = 60_000;
+// null = not loaded yet. Weeks load once per session; recent tracks poll.
+const music = { tracks: null, weeks: null, weekAlbums: {} };
+const musicRequests = {};
+let musicPollTimer = null;
+let musicRenderedNode = null;
+let musicRenderedHash = null;
+
+// The address after music.txt picks the page; a hover preview shows "recent".
+function musicView() {
+  return parseMusicTail(state.selected === musicRenderedNode ? state.tail : []);
 }
 
-const SPOTIFY_PROFILE_URL = "https://open.spotify.com/user/goodgametr";
+// One request per path at a time. Whatever happens, `done` stores something
+// non-null, so the redraw that follows never asks again in a loop.
+function musicFetch(path, done) {
+  if (musicRequests[path]) return;
+  musicRequests[path] = fetch(MUSIC_API + path, { cache: "no-store" })
+    .then((res) => (res.ok ? res.json() : Promise.reject(res.status)))
+    .then(done, () => done(null))
+    .finally(() => {
+      delete musicRequests[path];
+      if (musicRenderedNode) drawMusic();
+    });
+}
 
-const SPOTIFY_PLACEHOLDER =
-  `RECENTLY PLAYED  [check out my spotify](${SPOTIFY_PROFILE_URL})\n` +
-  `${"-".repeat(40)}\n\n` +
-  `No listening history yet. Check back\n` +
-  `once the sync job has run.`;
-
-function formatSpotifyContent(tracks) {
-  if (!Array.isArray(tracks) || tracks.length === 0) return SPOTIFY_PLACEHOLDER;
-  const entries = tracks.map((t) => {
-    const artists = Array.isArray(t.artists) ? t.artists.join(", ") : t.artist || "";
-    const when = t.playedAt ? relativeTime(t.playedAt) : "";
-    const title = t.url ? `[${t.name}](${t.url})` : t.name;
-    return `- ${title}\n    ${artists}${when ? ` · ${when}` : ""}`;
+function loadRecent() {
+  musicFetch("/", (data) => {
+    if (Array.isArray(data)) music.tracks = data;
+    else if (music.tracks === null) music.tracks = [];
   });
-  return (
-    `RECENTLY PLAYED  [check out my spotify](${SPOTIFY_PROFILE_URL})\n${"-".repeat(40)}\n\n` +
-    entries.join("\n\n")
-  );
 }
 
-const SPOTIFY_REFRESH_MS = 60_000;
-let spotifyCache = null;
-let spotifyRequest = null;
-let spotifyPollTimer = null;
-let spotifyRenderedNode = null;
+function drawMusic() {
+  const view = musicView();
+  if (view.tab === "recent" && music.tracks === null) loadRecent();
+  if (view.tab === "weekly" && music.weeks === null) {
+    musicFetch("/lastfm/weeks", (data) => {
+      music.weeks = Array.isArray(data) ? data : [];
+    });
+  }
+  if (view.week && music.weeks?.some((w) => weekId(w) === view.week)) {
+    if (musicWeekAlbums(music, view.week) === null) {
+      musicFetch(`/lastfm/week/${view.week}`, (data) => {
+        music.weekAlbums[view.week] = Array.isArray(data?.albums) ? data.albums : false;
+      });
+    }
+  }
+  showMusic(formatMusicPage(view, music));
+}
 
-function showSpotifyContent(raw) {
-  const activeLink = viewerEl.contains(document.activeElement) ? document.activeElement : null;
+// A redraw of the same page (fresh data) keeps the focused link and scroll;
+// a new page leaves focus to applyHash.
+function showMusic({ text, active, head }) {
+  const samePage = musicRenderedHash === location.hash;
+  musicRenderedHash = location.hash;
+  const activeLink = samePage && viewerEl.contains(document.activeElement) ? document.activeElement : null;
   const activeHref = activeLink?.getAttribute("href");
   const activeIndex = activeLink ? viewerLinks().indexOf(activeLink) : -1;
   const scrollTop = viewerEl.scrollTop;
-  viewerEl.innerHTML = linkifyContent(raw);
-  viewerEl.scrollTop = scrollTop;
+  viewerEl.innerHTML = linkifyContent(text);
+  for (const path of active) {
+    viewerEl.querySelector(`a[href="#/${path}"]`)?.setAttribute("aria-current", "page");
+  }
+  viewerLinks()[head]?.setAttribute("data-body-start", "");
+  if (samePage) viewerEl.scrollTop = scrollTop;
   if (activeIndex >= 0) {
     const links = viewerLinks();
     (links.find((link) => link.getAttribute("href") === activeHref) || links[activeIndex])
@@ -219,69 +247,31 @@ function showSpotifyContent(raw) {
   }
 }
 
-function refreshSpotify(node) {
-  if (spotifyRequest) return spotifyRequest;
+function syncMusicPolling(refresh = true) {
+  clearInterval(musicPollTimer);
+  musicPollTimer = null;
 
-  spotifyRequest = fetch("https://spotify-proxy.eudypte.workers.dev", { cache: "no-store" })
-    .then((res) => (res.ok ? res.json() : Promise.reject(res.status)))
-    .then((data) => {
-      spotifyCache = Array.isArray(data) ? data : data.tracks || [];
-      if (spotifyRenderedNode === node) {
-        showSpotifyContent(formatSpotifyContent(spotifyCache));
-      }
-    })
-    .catch(() => {
-      if (spotifyRenderedNode === node && spotifyCache === null) {
-        showSpotifyContent(SPOTIFY_PLACEHOLDER);
-      }
-    })
-    .finally(() => {
-      spotifyRequest = null;
-    });
-
-  return spotifyRequest;
-}
-
-function renderSpotifyView(node) {
-  spotifyRenderedNode = node;
-  rightTitleEl.textContent = node.name.toUpperCase();
-  if (spotifyCache !== null) {
-    showSpotifyContent(formatSpotifyContent(spotifyCache));
-  } else {
-    showSpotifyContent(`RECENTLY PLAYED\n${"-".repeat(40)}\n\nLoading...`);
-    refreshSpotify(node);
-  }
-}
-
-function syncSpotifyPolling(refresh = true) {
-  clearInterval(spotifyPollTimer);
-  spotifyPollTimer = null;
-
-  const node = state.selected?.dynamic === "spotify" ? state.selected : null;
-  if (!node) return;
-  if (refresh) refreshSpotify(node);
+  if (state.selected?.dynamic !== "music" || parseMusicTail(state.tail).tab !== "recent") return;
+  if (refresh) loadRecent();
   if (document.hidden) return;
-
-  spotifyPollTimer = setInterval(() => {
-    if (spotifyRenderedNode === node && spotifyCache !== null) {
-      showSpotifyContent(formatSpotifyContent(spotifyCache));
-    }
-    refreshSpotify(node);
-  }, SPOTIFY_REFRESH_MS);
+  musicPollTimer = setInterval(loadRecent, MUSIC_REFRESH_MS);
 }
 
 function renderFileView(node) {
-  if (node.dynamic === "spotify") {
-    renderSpotifyView(node);
+  rightTitleEl.textContent = node.name.toUpperCase();
+  if (node.dynamic === "music") {
+    musicRenderedNode = node;
+    drawMusic();
     return;
   }
-  spotifyRenderedNode = null;
-  rightTitleEl.textContent = node.name.toUpperCase();
+  musicRenderedNode = null;
+  musicRenderedHash = null;
   viewerEl.innerHTML = linkifyContent(node.content);
 }
 
 function renderDirInfo(dirNode) {
-  spotifyRenderedNode = null;
+  musicRenderedNode = null;
+  musicRenderedHash = null;
   rightTitleEl.textContent = "Info";
   const fileCount = dirNode.children.filter((c) => c.type === "file").length;
   const dirCount = dirNode.children.filter((c) => c.type === "dir").length;
@@ -332,8 +322,9 @@ function renderParentPane() {
 
 function render() {
   leftTitleEl.textContent = dosPath(state.dirPath);
-  statusBarEl.textContent =
-    dosPath(state.dirPath) + (state.selected ? "\\" + state.selected.name.toUpperCase() : "");
+  statusBarEl.textContent = dosPath(
+    state.selected ? [...state.dirPath, state.selected.name, ...state.tail] : state.dirPath,
+  );
   renderParentPane();
   renderList();
   renderViewer();
@@ -367,6 +358,15 @@ function onKeyDown(e) {
 
   if (e.key === "1") {
     openSettings();
+    e.preventDefault();
+    return;
+  }
+
+  // "[" and "]" step to the previous and next year on any weekly page.
+  if ((e.key === "[" || e.key === "]") && state.selected?.dynamic === "music") {
+    const dir = e.key === "[" ? -1 : 1;
+    const path = musicYearStep(parseMusicTail(state.tail), music.weeks, dir);
+    if (path) navigate(path.split("/"));
     e.preventDefault();
     return;
   }
@@ -467,6 +467,8 @@ function afterRender() {
 }
 
 function applyHash() {
+  const prevSelected = state.selected;
+  const focusText = state.mode === "viewer" ? viewerLinks()[state.linkIndex]?.textContent : null;
   resolveFromHash();
   if (!state.selected && pendingCursorName) {
     const idx = state.listing.findIndex((n) => n.name === pendingCursorName);
@@ -475,7 +477,20 @@ function applyHash() {
   pendingCursorName = null;
   setMode("list");
   render();
-  syncSpotifyPolling();
+  syncMusicPolling();
+  // A link to another page of the same file (music.txt's tabs, years and
+  // weeks) keeps the keyboard in the viewer, on the link with the same text
+  // (so "next >" can be pressed again), else on the first link of the page
+  // body, past the tab and year rows.
+  if (focusText != null && state.selected && state.selected === prevSelected) {
+    const links = viewerLinks();
+    if (links.length > 0) {
+      const same = links.findIndex((link) => link.textContent === focusText);
+      const body = links.findIndex((link) => link.hasAttribute("data-body-start"));
+      setMode("viewer");
+      focusLink(same >= 0 ? same : Math.max(body, 0));
+    }
+  }
   afterRender();
 }
 
@@ -591,7 +606,7 @@ document.addEventListener("keydown", (e) => {
 window.addEventListener("hashchange", applyHash);
 
 document.addEventListener("visibilitychange", () => {
-  syncSpotifyPolling(!document.hidden);
+  syncMusicPolling(!document.hidden);
 });
 
 // "error" does not bubble, so listen in the capture phase.

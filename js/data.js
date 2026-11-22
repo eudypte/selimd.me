@@ -145,7 +145,7 @@ view with private details blacked out.`,
         {
           name: "music.txt",
           type: "file",
-          dynamic: "spotify",
+          dynamic: "music",
           pinned: true,
         },
         {
